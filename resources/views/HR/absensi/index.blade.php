@@ -6,6 +6,7 @@
             <div class="flex flex-col gap-2 py-4 md:flex-row md:items-center print:hidden">
                 <div class="grow">
                     <h5 class="text-16">daftar absensi</h5>
+                    <p class="text-sm text-slate-500 dark:text-zink-200 mt-1">Catat dan pantau kehadiran karyawan harian dengan mudah</p>
                 </div>
                 <ul class="flex items-center gap-2 text-sm font-normal shrink-0">
                     <li class="relative before:content-['\ea54'] before:font-remix ltr:before:-right-1 rtl:before:-left-1  before:absolute before:text-[18px] before:-top-[3px] ltr:pr-4 rtl:pl-4 before:text-slate-400 dark:text-zink-200">
@@ -18,9 +19,9 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <div class="flex items-center mb-4">
+                    <div class="flex items-center mb-4 gap-2">
                         <h6 class="text-15 grow">daftar absensi</h6>
-                        <div class="shrink-0">
+                        <div class="shrink-0 flex gap-2">
                             <button data-modal-target="addAbsensiModal" type="button" class="text-white btn bg-custom-500 border-custom-500 hover:text-white hover:bg-custom-600 hover:border-custom-600 focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:text-white active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100 dark:ring-custom-400/20">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" class="lucide lucide-plus inline-block size-4">
                                     <path d="M5 12h14"></path>
@@ -28,6 +29,15 @@
                                 </svg> 
                                 <span class="align-middle">tambah absensi</span>
                             </button>
+                            <a href="{{ route('hr/absensi/import') }}"
+                               class="inline-flex items-center gap-2 px-4 py-2 border border-custom-500 text-custom-500 rounded-lg text-sm font-bold hover:bg-custom-50 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="upload" class="w-4 h-4">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                Import Excel
+                            </a>
                         </div>
                     </div>
 
@@ -39,6 +49,7 @@
                         </div>
                     </form>
 
+                    <div class="overflow-x-auto">
                     <table id="alternativePagination" class="display" style="width:100%">
                         <thead>
                             <tr>
@@ -152,4 +163,26 @@
         </div>
     </div>
     <!-- end tambah absensi modal -->
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('alternativePagination')) {
+        new DataTable('#alternativePagination', {
+            pagingType: 'full_numbers',
+            columnDefs: [
+                { orderable: false, targets: [0, 7] }
+            ],
+            language: {
+                search: 'Cari:',
+                lengthMenu: 'Tampilkan _MENU_ data',
+                info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+                paginate: { first: 'Pertama', last: 'Terakhir', next: 'Selanjutnya', previous: 'Sebelumnya' },
+                emptyTable: 'Tidak ada data'
+            }
+        });
+    }
+});
+</script>
+@endpush
+
 @endsection

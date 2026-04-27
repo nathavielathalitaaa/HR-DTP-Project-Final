@@ -6,6 +6,7 @@
             <div class="flex flex-col gap-2 py-4 md:flex-row md:items-center print:hidden">
                 <div class="grow">
                     <h5 class="text-16">data shift</h5>
+                    <p class="text-sm text-slate-500 dark:text-zink-200 mt-1">Atur jadwal shift dan parameter kerja karyawan</p>
                 </div>
                 <ul class="flex items-center gap-2 text-sm font-normal shrink-0">
                     <li class="relative before:content-['\ea54'] before:font-remix ltr:before:-right-1 rtl:before:-left-1  before:absolute before:text-[18px] before:-top-[3px] ltr:pr-4 rtl:pl-4 before:text-slate-400 dark:text-zink-200">
@@ -30,7 +31,7 @@
                             </button>
                         </div>
                     </div>
-                    <br>
+                    <div class="overflow-x-auto">
                     <table id="alternativePagination" class="display" style="width:100%">
                         <thead>
                             <tr>
@@ -157,3 +158,24 @@
         }
     </script>
 @endsection
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('alternativePagination')) {
+        new DataTable('#alternativePagination', {
+            pagingType: 'full_numbers',
+            columnDefs: [
+                { orderable: false, targets: [0, 6] }
+            ],
+            language: {
+                search: 'Cari:',
+                lengthMenu: 'Tampilkan _MENU_ data',
+                info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+                paginate: { first: 'Pertama', last: 'Terakhir', next: 'Selanjutnya', previous: 'Sebelumnya' },
+                emptyTable: 'Tidak ada data'
+            }
+        });
+    }
+});
+</script>
+@endpush

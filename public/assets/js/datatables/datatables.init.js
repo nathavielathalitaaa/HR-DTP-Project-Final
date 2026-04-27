@@ -19,10 +19,7 @@ new DataTable('#hoverableTable');
 //Hoverable example
 new DataTable('#borderedTable');
 
-//Alternative pagination
-new DataTable('#alternativePagination', {
-    pagingType: 'full_numbers'
-});
+//Alternative pagination - removed to allow per-page initialization
 
 //Hidden columns
 new DataTable('#hiddenColumns', {

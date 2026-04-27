@@ -23,7 +23,7 @@
                         <div class="flex items-center gap-4 card-body">
                             <div class="flex items-center justify-center rounded-md size-12 text-sky-500 bg-sky-100 text-15 dark:bg-sky-500/20 shrink-0"><i data-lucide="users-2"></i></div>
                             <div class="overflow-hidden grow">
-                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="43">0</span></h5>
+                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="{{ $totalEmployee }}">0</span></h5>
                                 <p class="truncate text-slate-500 dark:text-zink-200">Total Employee</p>
                             </div>
                         </div>
@@ -34,7 +34,7 @@
                         <div class="flex items-center gap-4 card-body">
                             <div class="flex items-center justify-center text-red-500 bg-red-100 rounded-md size-12 text-15 dark:bg-red-500/20 shrink-0"><i data-lucide="user-x-2"></i></div>
                             <div class="overflow-hidden grow">
-                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="6">0</span></h5>
+                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="{{ $absenHariIni }}">0</span></h5>
                                 <p class="truncate text-slate-500 dark:text-zink-200">Absent Employee (Today)</p>
                             </div>
                         </div>
@@ -45,7 +45,7 @@
                         <div class="flex items-center gap-4 card-body">
                             <div class="flex items-center justify-center text-green-500 bg-green-100 rounded-md size-12 text-15 dark:bg-green-500/20 shrink-0"><i data-lucide="user-check-2"></i></div>
                             <div class="overflow-hidden grow">
-                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="32">0</span></h5>
+                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="{{ $hadirHariIni }}">0</span></h5>
                                 <p class="truncate text-slate-500 dark:text-zink-200">Present Employee (Today)</p>
                             </div>
                         </div>
@@ -56,7 +56,7 @@
                         <div class="flex items-center gap-4 card-body">
                             <div class="flex items-center justify-center rounded-md size-12 text-custom-500 bg-custom-100 text-15 dark:bg-custom-500/20 shrink-0"><i data-lucide="briefcase"></i></div>
                             <div class="overflow-hidden grow">
-                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="22">0</span></h5>
+                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="{{ $hariKerja }}">0</span></h5>
                                 <p class="truncate text-slate-500 dark:text-zink-200">Working Days (Current Month)</p>
                             </div>
                         </div>

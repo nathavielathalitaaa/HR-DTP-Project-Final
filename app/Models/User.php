@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,73 +11,81 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-
     protected $fillable = [
         'user_id',
         'name',
         'email',
-        'join_date',
-        'experience',
-        'last_login',
+        'password',
+        'role_name',
+        'status',
         'phone_number',
         'location',
-        'status',
-        'role_name',
-        'email',
-        'role_name',
-        'avatar',
-        'position',
-        'designation',
-        'department',
-        'password',
+        'join_date',
         'gaji_pokok',
-        'nip',
+        'avatar',
+        'position',    // kolom posisi singkat di users (opsional, bisa pakai profile)
+        'department',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password'          => 'hashed',
+        'join_date'         => 'date',
+    ];
+
+    public function profile()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasOne(EmployeeProfile::class, 'user_id');
     }
 
-    /** auto generate id */
-    protected static function boot()
+    /**
+     * Ambil profile, buat baru kalau belum ada.
+     * Pakai ini di controller/view supaya tidak null.
+     * Contoh: auth()->user()->profileOrNew->nik
+     */
+    public function getProfileOrNewAttribute(): EmployeeProfile
     {
-        parent::boot();
+        return $this->profile ?? new EmployeeProfile(['user_id' => $this->id]);
+    }
 
-        self::creating(function ($model) {
-            // Retrieve the last user record ordered by user_id
-            $lastUser = self::orderBy('user_id', 'desc')->first();
+    // ── Relasi ke Absensi 
+    public function absensis()
+    {
+        return $this->hasMany(Absensi::class, 'user_id');
+    }
 
-            // Determine the next ID number
-            $nextID = $lastUser ? intval(substr($lastUser->user_id, 3)) + 1 : 1;
+    // ── Relasi ke JadwalShift 
+    public function jadwalShifts()
+    {
+        return $this->hasMany(JadwalShift::class, 'user_id');
+    }
 
-            do {
-                // Generate the new user_id
-                $model->user_id = 'KH-' . sprintf("%04s", $nextID++);
-            } while (self::where('user_id', $model->user_id)->exists());
-        });
+    // ── Relasi ke Penggajian 
+    public function penggajians()
+    {
+        return $this->hasMany(Penggajian::class, 'user_id');
+    }
+
+    // ── Relasi ke Leave 
+    public function leaves()
+    {
+        return $this->hasMany(Leave::class, 'staff_id');
+    }
+
+    // ── Helper: jabatan dari profile
+    public function getJabatanAttribute(): ?string
+    {
+        return $this->profile?->jabatan;
+    }
+
+    // ── Helper: cek jabatan untuk sistem approval
+    public function hasJabatan(string $jabatan): bool
+    {
+        return $this->profile?->jabatan === $jabatan;
     }
 }

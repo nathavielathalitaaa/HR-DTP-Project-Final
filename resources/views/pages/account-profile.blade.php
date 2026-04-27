@@ -1,1055 +1,479 @@
 @extends('layouts.master')
+
+<style>
+  /* Soft UI Input Styling */
+  .sng-input {
+    background: var(--bg-inner);
+    border: 1px solid rgba(148, 188, 163, 0.3);
+    border-radius: 12px;
+    padding: 10px 14px;
+    box-shadow: inset 3px 3px 7px var(--sh-dark), inset -3px -3px 7px var(--sh-light);
+    color: var(--text-dark);
+    font-size: 14px;
+  }
+  .sng-input:focus {
+    outline: none;
+    border-color: rgba(26, 158, 92, 0.5);
+  }
+  .sng-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  /* Soft UI Button Styling */
+  .sng-btn-primary {
+    background: linear-gradient(135deg, #1a9e5c, #2db870);
+    color: white;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-weight: 700;
+    box-shadow: 4px 4px 10px var(--sh-dark), -4px -4px 10px var(--sh-light);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .sng-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 6px 6px 12px var(--sh-dark), -6px -6px 12px var(--sh-light);
+  }
+
+  /* Section Title */
+  .stitle {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-body);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-left: 10px;
+    border-left: 4px solid var(--green-main);
+    border-radius: 99px;
+  }
+
+  /* TTD Preview Box */
+  .ttd-preview-box {
+    background: var(--bg-inner);
+    border: 2px dashed rgba(148, 188, 163, 0.5);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: inset 3px 3px 8px var(--sh-dark), inset -3px -3px 8px var(--sh-light);
+    text-align: center;
+  }
+
+  /* Warning/Danger Box */
+  .sng-box-danger {
+    background: #fff5f5;
+    border-left: 4px solid #e11d48;
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #831843;
+  }
+
+  /* Info Box */
+  .sng-box-info {
+    background: #f0fdf4;
+    border-left: 4px solid var(--green-main);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #15803d;
+  }
+</style>
+
 @section('content')
-    <!-- Page-content -->
+    <!-- Page-content with soft UI background -->
     <div class="group-data-[sidebar-size=lg]:ltr:md:ml-vertical-menu group-data-[sidebar-size=lg]:rtl:md:mr-vertical-menu group-data-[sidebar-size=md]:ltr:ml-vertical-menu-md group-data-[sidebar-size=md]:rtl:mr-vertical-menu-md group-data-[sidebar-size=sm]:ltr:ml-vertical-menu-sm group-data-[sidebar-size=sm]:rtl:mr-vertical-menu-sm pt-[calc(theme('spacing.header')_*_1)] pb-[calc(theme('spacing.header')_*_0.8)] px-4 group-data-[navbar=bordered]:pt-[calc(theme('spacing.header')_*_1.3)] group-data-[navbar=hidden]:pt-0 group-data-[layout=horizontal]:mx-auto group-data-[layout=horizontal]:max-w-screen-2xl group-data-[layout=horizontal]:px-0 group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:ltr:md:ml-auto group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:rtl:md:mr-auto group-data-[layout=horizontal]:md:pt-[calc(theme('spacing.header')_*_1.6)] group-data-[layout=horizontal]:px-3 group-data-[layout=horizontal]:group-data-[navbar=hidden]:pt-[calc(theme('spacing.header')_*_0.9)]">
         <div class="container-fluid group-data-[content=boxed]:max-w-boxed mx-auto">
-            <div class="mt-1 -ml-3 -mr-3 rounded-none card">
-                <div class="card-body !px-2.5">
-                    <div class="grid grid-cols-1 gap-5 lg:grid-cols-12 2xl:grid-cols-12">
-                        <div class="lg:col-span-2 2xl:col-span-1">
-                            @if(!empty($profileDetail->name))
-                                @php
-                                    $fullName = $profileDetail->name;
-                                    $parts = explode(' ', $fullName);
-                                    $initials = '';
-                                    foreach ($parts as $part) {
-                                        $initials .= strtoupper(substr($part, 0, 1));
-                                    }
-                                @endphp
+
+            <!-- Page Background with soft UI -->
+            <div style="background: var(--bg-base); border-radius: 20px; padding: 24px; margin: 0 -10px;">
+
+            <!-- Breadcrumb -->
+            <div class="mb-6">
+                <nav class="text-sm" aria-label="breadcrumb">
+                    <ol class="flex items-center gap-2">
+                        <li><a href="{{ route('home') }}" style="color: var(--green-main); font-weight: 600;" class="hover:opacity-80">Beranda</a></li>
+                        <li style="color: var(--text-muted);">/</li>
+                        <li style="color: var(--text-dark); font-weight: 600;">Profil Saya</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Page Title -->
+            <h2 style="color: var(--text-dark);" class="text-2xl font-bold mb-6">Profil Akun Saya</h2>
+
+            <!-- Main Grid: left col = user card, right col = tabs -->
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+                <!-- Left Column: User Info Card (Soft UI) -->
+                <div class="lg:col-span-1">
+                    <div class="ds-card">
+                        <!-- Avatar Circle with Initials -->
+                        @php
+                            $fullName = $user->name ?? 'User';
+                            $parts = explode(' ', trim($fullName));
+                            $initials = '';
+                            foreach ($parts as $part) {
+                                if (!empty($part)) {
+                                    $initials .= strtoupper(substr($part, 0, 1));
+                                }
+                            }
+                            if (strlen($initials) > 2) {
+                                $initials = substr($initials, 0, 2);
+                            }
+                        @endphp
+                        <div class="flex justify-center mb-6">
+                            @if($user->avatar)
+                                <div class="w-20 h-20 rounded-full border-4 border-custom-100 overflow-hidden flex items-center justify-center bg-custom-50">
+                                    <img src="{{ URL::to('assets/images/user/'.$user->avatar) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
+                                </div>
+                            @else
+                                <div class="w-20 h-20 rounded-full border-4 border-custom-100 bg-gradient-to-br from-custom-400 to-custom-500 flex items-center justify-center">
+                                    <span style="color: white;" class="text-2xl font-bold">{{ $initials }}</span>
+                                </div>
                             @endif
-                            <div class="relative inline-block rounded-full shadow-md size-20 bg-slate-100 profile-user xl:size-28">
-                                @if($profileDetail && !empty($profileDetail->avatar))
-                                    <img src="{{ URL::to('assets/images/user/'.$profileDetail->avatar) }}" 
-                                        alt="" 
-                                        class="object-cover border-0 rounded-full img-thumbnail user-profile-image">
-                                @elseif($profileDetail && $profileDetail->avatar === null)
-                                    <div class="flex items-center justify-center font-medium rounded-full size-10 shrink-0 bg-slate-200 text-slate-800 dark:text-zink-50 dark:bg-zink-600">
-                                        {{ $initials }}
+                        </div>
+
+                        <!-- Name -->
+                        <h3 style="color: var(--text-dark);" class="text-xl font-bold text-center mb-2">
+                            {{ $user->name }}
+                        </h3>
+
+                        <!-- Role Badge -->
+                        @if($user->role_name)
+                            <div class="flex justify-center mb-4">
+                                <span class="ds-badge b-green">{{ $user->role_name }}</span>
+                            </div>
+                        @endif
+
+                        <!-- Department -->
+                        @if($user->position)
+                            <p style="color: var(--text-body);" class="text-center text-sm font-medium mb-4">
+                                {{ $user->position }}
+                            </p>
+                        @endif
+
+                        <!-- Divider -->
+                        <div style="border-color: rgba(26, 158, 92, 0.2);" class="border-t my-4"></div>
+
+                        <!-- Details -->
+                        <div class="space-y-4">
+                            <!-- Email -->
+                            <div class="flex items-start gap-3">
+                                <i data-lucide="mail" style="color: var(--text-muted);" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                                <div>
+                                    <p style="color: var(--text-muted); font-size: 11px;" class="font-bold tracking-wider uppercase">Email</p>
+                                    <p style="color: var(--text-dark);" class="text-sm break-all">{{ $user->email }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Phone -->
+                            @if($user->phone_number)
+                                <div class="flex items-start gap-3">
+                                    <i data-lucide="phone" style="color: var(--text-muted);" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                                    <div>
+                                        <p style="color: var(--text-muted); font-size: 11px;" class="font-bold tracking-wider uppercase">Telepon</p>
+                                        <p style="color: var(--text-dark);" class="text-sm">{{ $user->phone_number }}</p>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Location -->
+                            @if($user->location)
+                                <div class="flex items-start gap-3">
+                                    <i data-lucide="map-pin" style="color: var(--text-muted);" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                                    <div>
+                                        <p style="color: var(--text-muted); font-size: 11px;" class="font-bold tracking-wider uppercase">Lokasi</p>
+                                        <p style="color: var(--text-dark);" class="text-sm">{{ $user->location }}</p>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Join Date -->
+                            @if($user->join_date)
+                                <div class="flex items-start gap-3">
+                                    <i data-lucide="calendar" style="color: var(--text-muted);" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                                    <div>
+                                        <p style="color: var(--text-muted); font-size: 11px;" class="font-bold tracking-wider uppercase">Tanggal Bergabung</p>
+                                        <p style="color: var(--text-dark);" class="text-sm">{{ $user->join_date->format('d M Y') }}</p>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Status -->
+                            <div class="flex items-start gap-3">
+                                <i data-lucide="check-circle" style="color: var(--green-main);" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                                <div>
+                                    <p style="color: var(--text-muted); font-size: 11px;" class="font-bold tracking-wider uppercase">Status</p>
+                                    <span class="ds-badge b-green">
+                                        {{ ucfirst($user->status ?? 'aktif') }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Tabs with Forms -->
+                <div class="lg:col-span-2" x-data="{ activeTab: 'info' }">
+
+                    <!-- Tab Navigation Buttons -->
+                    <div class="flex gap-3 mb-6 overflow-x-auto pb-2">
+                        <button
+                            @click="activeTab = 'info'"
+                            :class="activeTab === 'info' ? 'bg-custom-500 text-white font-bold' : 'text-slate-500 font-medium hover:text-slate-700'"
+                            style="padding: 6px 16px; border-radius: 99px; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s ease;"
+                            class="whitespace-nowrap">
+                            <i data-lucide="user" class="w-4 h-4 inline-block mr-2"></i>
+                            Informasi Dasar
+                        </button>
+                        <button
+                            @click="activeTab = 'ttd'"
+                            :class="activeTab === 'ttd' ? 'bg-custom-500 text-white font-bold' : 'text-slate-500 font-medium hover:text-slate-700'"
+                            style="padding: 6px 16px; border-radius: 99px; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s ease;"
+                            class="whitespace-nowrap">
+                            <i data-lucide="edit" class="w-4 h-4 inline-block mr-2"></i>
+                            TTD & PIN
+                        </button>
+                        <button
+                            @click="activeTab = 'keamanan'"
+                            :class="activeTab === 'keamanan' ? 'bg-custom-500 text-white font-bold' : 'text-slate-500 font-medium hover:text-slate-700'"
+                            style="padding: 6px 16px; border-radius: 99px; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s ease;"
+                            class="whitespace-nowrap">
+                            <i data-lucide="shield" class="w-4 h-4 inline-block mr-2"></i>
+                            Keamanan
+                        </button>
+                    </div>
+
+                    <!-- Tab Content Panels -->
+                    <div class="ds-section"
+
+                        <!-- Tab: Informasi Dasar -->
+                        <div x-show="activeTab === 'info'">
+                            <h4 style="color: var(--text-dark);" class="text-lg font-bold mb-6 flex items-center gap-2">
+                                <span class="stitle" style="margin: 0; padding: 0; border: none;">Informasi Dasar</span>
+                            </h4>
+                            
+                            <form action="{{ route('profile.update') }}" method="POST">
+                                @csrf
+
+                                <!-- Name -->
+                                <div class="mb-6">
+                                    <label for="name" style="color: var(--text-dark);" class="block text-sm font-bold mb-2">Nama Lengkap</label>
+                                    <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required class="w-full sng-input"
+                                        placeholder="Masukkan nama lengkap">
+                                    @error('name')
+                                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Phone Number -->
+                                <div class="mb-6">
+                                    <label for="phone_number" style="color: var(--text-dark);" class="block text-sm font-bold mb-2">Nomor Telepon</label>
+                                    <input type="text" name="phone_number" id="phone_number" value="{{ old('phone_number', $user->phone_number) }}" class="w-full sng-input"
+                                        placeholder="Contoh: 08123456789">
+                                    @error('phone_number')
+                                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Location -->
+                                <div class="mb-6">
+                                    <label for="location" style="color: var(--text-dark);" class="block text-sm font-bold mb-2">Lokasi</label>
+                                    <input type="text" name="location" id="location" value="{{ old('location', $user->location) }}" class="w-full sng-input"
+                                        placeholder="Masukkan lokasi">
+                                    @error('location')
+                                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Submit Button -->
+                                <button type="submit" class="w-full sng-btn-primary">
+                                    <i data-lucide="save" class="w-4 h-4 inline-block mr-2"></i>
+                                    Simpan Perubahan
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Tab: Tanda Tangan & PIN -->
+                        <div x-show="activeTab === 'ttd'">
+                            <h4 style="color: var(--text-dark);" class="text-lg font-bold mb-6 flex items-center gap-2">
+                                <span class="stitle" style="margin: 0; padding: 0; border: none;">Tanda Tangan & PIN</span>
+                            </h4>
+
+                            <!-- Section 1: TTD Upload -->
+                            <div class="pb-6 mb-6" style="border-bottom: 1px solid rgba(148, 188, 163, 0.2);">
+                                <h5 style="color: var(--text-dark);" class="text-md font-bold mb-4 flex items-center gap-2">
+                                    <i data-lucide="pen-tool" class="w-5 h-5" style="color: var(--green-main);"></i>
+                                    Tanda Tangan Digital
+                                </h5>
+
+                                <!-- Current TTD Preview -->
+                                @if($profile->ttd_path)
+                                    <div class="mb-6">
+                                        <p style="color: var(--text-body);" class="text-sm font-medium mb-3">Tanda tangan Anda saat ini:</p>
+                                        <div class="ttd-preview-box">
+                                            <img src="{{ route('profile.ttd.preview') }}" alt="TTD" class="w-full max-w-xs mx-auto h-auto">
+                                        </div>
                                     </div>
                                 @else
-                                    <img src="{{ URL::to('assets/images/user/'.Session::get('avatar')) }}" 
-                                        alt="" 
-                                        class="object-cover border-0 rounded-full img-thumbnail user-profile-image">
+                                    <div class="sng-box-danger mb-6">
+                                        <i data-lucide="alert-circle" class="w-4 h-4 inline-block mr-2"></i>
+                                        Belum ada tanda tangan yang diunggah
+                                    </div>
                                 @endif
-                                <div class="absolute bottom-0 flex items-center justify-center rounded-full size-8 ltr:right-0 rtl:left-0 profile-photo-edit">
-                                    <input id="profile-img-file-input" type="file" class="hidden profile-img-file-input">
-                                    <label for="profile-img-file-input" class="flex items-center justify-center bg-white rounded-full shadow-lg cursor-pointer size-8 dark:bg-zink-600 profile-photo-edit">
-                                        <i data-lucide="image-plus" class="size-4 text-slate-500 dark:text-zink-200 fill-slate-100 dark:fill-zink-500"></i>
-                                    </label>
-                                </div>
-                            </div>
-                        </div><!--end col-->
-                        <div class="lg:col-span-10 2xl:col-span-9">
-                            <h5 class="mb-1">
-                                @if(!empty($profileDetail->name))
-                                    {{ $profileDetail->name }}
-                                @else
-                                    {{ Session::get('name') }} 
-                                @endif 
-                                <i data-lucide="badge-check" class="inline-block size-4 text-sky-500 fill-sky-100 dark:fill-custom-500/20"></i>
-                            </h5>
-                            <div class="flex gap-3 mb-4">
-                                <p class="text-slate-500 dark:text-zink-200">
-                                    <i data-lucide="user-circle" 
-                                    class="inline-block size-4 ltr:mr-1 rtl:ml-1 text-slate-500 dark:text-zink-200 fill-slate-100 dark:fill-zink-500"></i>
 
-                                    @if($profileDetail && !empty($profileDetail->position))
-                                        {{ $profileDetail->position }}
-                                    @elseif($profileDetail && $profileDetail->position === null)
-                                        N/A
+                                <!-- Upload Form -->
+                                <form action="{{ route('profile.ttd') }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="mb-6">
+                                        <label for="ttd" style="color: var(--text-dark);" class="block text-sm font-bold mb-3">Upload Tanda Tangan Baru</label>
+                                        <div class="relative ttd-preview-box border-dashed hover:opacity-80 transition-opacity cursor-pointer group">
+                                            <input type="file" name="ttd" id="ttd" accept=".png,.jpg,.jpeg,image/png,image/jpeg" required class="hidden" onchange="previewTtd(event)">
+                                            <label for="ttd" class="cursor-pointer block">
+                                                <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto mb-2" style="color: var(--text-muted);"></i>
+                                                <p style="color: var(--text-dark);" class="text-sm font-medium">Klik untuk memilih file</p>
+                                                <p style="color: var(--text-muted);" class="text-xs mt-1">PNG, JPG, atau JPEG (Max 2MB)</p>
+                                            </label>
+                                        </div>
+                                        @error('ttd')
+                                            <p class="text-xs text-red-600 mt-2">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div class="sng-box-info mb-6">
+                                        <i data-lucide="info" class="w-4 h-4 inline-block mr-2"></i>
+                                        Upload file PNG transparan untuk hasil terbaik. Ukuran maksimal: 2MB.
+                                    </div>
+
+                                    <button type="submit" class="w-full sng-btn-primary">
+                                        <i data-lucide="save" class="w-4 h-4 inline-block mr-2"></i>
+                                        Simpan Tanda Tangan
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Section 2: PIN Setup -->
+                            <div>
+                                <h5 style="color: var(--text-dark);" class="text-md font-bold mb-4 flex items-center gap-2">
+                                    <i data-lucide="key" class="w-5 h-5" style="color: var(--green-main);"></i>
+                                    PIN Approval
+                                </h5>
+
+                                <!-- PIN Status Badge -->
+                                <div class="mb-6">
+                                    @if($profile->pin)
+                                        <span class="ds-badge b-green">
+                                            <i data-lucide="check-circle" class="w-3 h-3 inline-block mr-1"></i>
+                                            PIN sudah diatur
+                                        </span>
                                     @else
-                                        {{ Session::get('name') }}
+                                        <span class="ds-badge b-amber">
+                                            <i data-lucide="alert-circle" class="w-3 h-3 inline-block mr-1"></i>
+                                            Belum ada PIN
+                                        </span>
                                     @endif
-                                </p>
+                                </div>
 
-                                <p class="text-slate-500 dark:text-zink-200">
-                                    <i data-lucide="map-pin" 
-                                    class="inline-block size-4 ltr:mr-1 rtl:ml-1 text-slate-500 dark:text-zink-200 fill-slate-100 dark:fill-zink-500"></i>
+                                <!-- PIN Form -->
+                                <form action="{{ route('profile.pin') }}" method="POST">
+                                    @csrf
 
-                                    @if($profileDetail && !empty($profileDetail->location))
-                                        {{ $profileDetail->location }}
-                                    @elseif($profileDetail && $profileDetail->location === null)
-                                        N/A
-                                    @else
-                                        {{ Session::get('location') }}
+                                    <!-- Current PIN (if already set) -->
+                                    @if($profile->pin)
+                                        <div class="mb-6">
+                                            <label for="current_pin" style="color: var(--text-dark);" class="block text-sm font-bold mb-2">PIN Lama</label>
+                                            <input type="password" name="current_pin" id="current_pin" inputmode="numeric" maxlength="6" class="w-full sng-input tracking-widest"
+                                                placeholder="••••••">
+                                            @error('current_pin')
+                                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                            @enderror
+                                        </div>
                                     @endif
-                                </p>
-                            </div>
-                            <ul class="flex flex-wrap gap-3 mt-4 text-center divide-x divide-slate-200 dark:divide-zink-500 rtl:divide-x-reverse">
-                                <li class="px-5">
-                                    <h5>1542</h5>
-                                    <p class="text-slate-500 dark:text-zink-200">Following</p>
-                                </li>
-                                <li class="px-5">
-                                    <h5>10.65k</h5>
-                                    <p class="text-slate-500 dark:text-zink-200">Followers</p>
-                                </li>
-                                <li class="px-5">
-                                    <h5>115+</h5>
-                                    <p class="text-slate-500 dark:text-zink-200">Products</p>
-                                </li>
-                            </ul>
-                            <p class="mt-4 text-slate-500 dark:text-zink-200">Strong leader and negotiator adept at driving collaboration and innovation. Highly accomplished Web Developer with 10+ years of experience creating, launching and leading successful business ventures. Proven ability to build relationships, drive customer loyalty and increase profitability.</p>
-                            <div class="flex gap-2 mt-4">
-                                <a href="#!" class="flex items-center justify-center transition-all duration-200 ease-linear rounded size-9 text-sky-500 bg-sky-100 hover:bg-sky-200 dark:bg-sky-500/20 dark:hover:bg-sky-500/30">
-                                    <i data-lucide="facebook" class="size-4"></i>
-                                </a>
-                                <a href="#!" class="flex items-center justify-center text-pink-500 transition-all duration-200 ease-linear bg-pink-100 rounded size-9 hover:bg-pink-200 dark:bg-pink-500/20 dark:hover:bg-pink-500/30">
-                                    <i data-lucide="instagram" class="size-4"></i>
-                                </a>
-                                <a href="#!" class="flex items-center justify-center text-red-500 transition-all duration-200 ease-linear bg-red-100 rounded size-9 hover:bg-red-200 dark:bg-red-500/20 dark:hover:bg-red-500/30">
-                                    <i data-lucide="globe" class="size-4"></i>
-                                </a>
-                                <a href="#!" class="flex items-center justify-center transition-all duration-200 ease-linear rounded text-custom-500 bg-custom-100 size-9 hover:bg-custom-200 dark:bg-custom-500/20 dark:hover:bg-custom-500/30">
-                                    <i data-lucide="linkedin" class="size-4"></i>
-                                </a>
-                                <a href="#!" class="flex items-center justify-center text-pink-500 transition-all duration-200 ease-linear bg-pink-100 rounded size-9 hover:bg-pink-200 dark:bg-pink-500/20 dark:hover:bg-pink-500/30">
-                                    <i data-lucide="dribbble" class="size-4"></i>
-                                </a>
-                                <a href="#!" class="flex items-center justify-center transition-all duration-200 ease-linear rounded size-9 text-slate-500 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500">
-                                    <i data-lucide="github" class="size-4"></i>
-                                </a>
+
+                                    <!-- New PIN -->
+                                    <div class="mb-6">
+                                        <label for="pin" style="color: var(--text-dark);" class="block text-sm font-bold mb-2">PIN Baru (6 digit angka)</label>
+                                        <input type="password" name="pin" id="pin" inputmode="numeric" maxlength="6" required class="w-full sng-input tracking-widest"
+                                            placeholder="••••••">
+                                        @error('pin')
+                                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <!-- PIN Confirmation -->
+                                    <div class="mb-6">
+                                        <label for="pin_confirmation" style="color: var(--text-dark);" class="block text-sm font-bold mb-2">Konfirmasi PIN Baru</label>
+                                        <input type="password" name="pin_confirmation" id="pin_confirmation" inputmode="numeric" maxlength="6" required class="w-full sng-input tracking-widest"
+                                            placeholder="••••••">
+                                        @error('pin_confirmation')
+                                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <!-- Info Box -->
+                                    <div class="sng-box-info mb-6">
+                                        <i data-lucide="info" class="w-4 h-4 inline-block mr-2"></i>
+                                        PIN digunakan saat menyetujui dokumen. Jangan bagikan PIN Anda.
+                                    </div>
+
+                                    <button type="submit" class="w-full sng-btn-primary">
+                                        <i data-lucide="save" class="w-4 h-4 inline-block mr-2"></i>
+                                        Simpan PIN
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                        <div class="lg:col-span-12 2xl:col-span-2">
-                            <div class="flex gap-2 2xl:justify-end">
-                                <a href="mailto:Sinergi Hotel & Vila@sinergihv.com" class="flex items-center justify-center size-[37.5px] p-0 text-slate-500 btn bg-slate-100 hover:text-white hover:bg-slate-600 focus:text-white focus:bg-slate-600 focus:ring focus:ring-slate-100 active:text-white active:bg-slate-600 active:ring active:ring-slate-100 dark:bg-slate-500/20 dark:text-slate-400 dark:hover:bg-slate-500 dark:hover:text-white dark:focus:bg-slate-500 dark:focus:text-white dark:active:bg-slate-500 dark:active:text-white dark:ring-slate-400/20"><i data-lucide="mail" class="size-4"></i></a>
-                                <button type="button" class="text-white transition-all duration-200 ease-linear btn bg-custom-500 border-custom-500 hover:text-white hover:bg-custom-600 hover:border-custom-600 focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:text-white active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100 dark:ring-custom-400/20">Hire Us</button>
-                    
-                                <div class="relative dropdown">
-                                    <button class="flex items-center justify-center size-[37.5px] dropdown-toggle p-0 text-slate-500 btn bg-slate-100 hover:text-white hover:bg-slate-600 focus:text-white focus:bg-slate-600 focus:ring focus:ring-slate-100 active:text-white active:bg-slate-600 active:ring active:ring-slate-100 dark:bg-slate-500/20 dark:text-slate-400 dark:hover:bg-slate-500 dark:hover:text-white dark:focus:bg-slate-500 dark:focus:text-white dark:active:bg-slate-500 dark:active:text-white dark:ring-slate-400/20" id="accountSettings" data-bs-toggle="dropdown"><i data-lucide="more-horizontal" class="size-4"></i></button>
-                                    <ul class="absolute z-50 hidden py-2 mt-1 ltr:text-left rtl:text-right list-none bg-white dark:bg-zink-600 rounded-md shadow-md dropdown-menu min-w-[10rem]" aria-labelledby="accountSettings">
-                                        <li class="px-3 mb-2 text-sm text-slate-500">
-                                            Payments
-                                        </li>
-                                        <li>
-                                            <a class="block px-4 py-1.5 text-base font-medium transition-all duration-200 ease-linear text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500 dark:text-zink-100 dark:hover:bg-zink-500 dark:hover:text-zink-200 dark:focus:bg-zink-500 dark:focus:text-zink-200" href="#!">Create Invoice</a>
-                                        </li>
-                                        <li>
-                                            <a class="block px-4 py-1.5 text-base font-medium transition-all duration-200 ease-linear text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500 dark:text-zink-100 dark:hover:bg-zink-500 dark:hover:text-zink-200 dark:focus:bg-zink-500 dark:focus:text-zink-200" href="#!">Pending Billing</a>
-                                        </li>
-                                        <li>
-                                            <a class="block px-4 py-1.5 text-base font-medium transition-all duration-200 ease-linear text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500 dark:text-zink-100 dark:hover:bg-zink-500 dark:hover:text-zink-200 dark:focus:bg-zink-500 dark:focus:text-zink-200" href="#!">Genarate Bill</a>
-                                        </li>
-                                        <li>
-                                            <a class="block px-4 py-1.5 text-base font-medium transition-all duration-200 ease-linear text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500 dark:text-zink-100 dark:hover:bg-zink-500 dark:hover:text-zink-200 dark:focus:bg-zink-500 dark:focus:text-zink-200" href="#!">Subscription</a>
-                                        </li>
-                                    </ul>
+
+                        <!-- Tab: Keamanan -->
+                        <div x-show="activeTab === 'keamanan'" class="p-6">
+                            <h4 class="text-lg font-semibold text-slate-800 dark:text-zink-100 mb-6">Keamanan Akun</h4>
+
+                            <!-- Last Login Info -->
+                            <div class="rounded-lg border border-slate-200 dark:border-zink-500 p-4 mb-4 bg-slate-50 dark:bg-zink-600">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="clock" class="w-5 h-5 text-slate-400 dark:text-zink-400"></i>
+                                    <div>
+                                        <p class="text-sm text-slate-600 dark:text-zink-300">Login Terakhir</p>
+                                        <p class="text-md font-medium text-slate-800 dark:text-zink-100">
+                                            Sekarang
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Change Password Section (UI only, no functionality yet) -->
+                            <div class="rounded-lg border border-slate-200 dark:border-zink-500 p-4 bg-slate-50 dark:bg-zink-600">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="key" class="w-5 h-5 text-slate-400 dark:text-zink-400 mt-0.5"></i>
+                                        <div>
+                                            <p class="text-sm font-medium text-slate-700 dark:text-zink-200">Ubah Kata Sandi</p>
+                                            <p class="text-xs text-slate-600 dark:text-zink-400 mt-1">Perbarui kata sandi akun Anda secara berkala untuk keamanan maksimal</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-zink-200 bg-white dark:bg-zink-700 border border-slate-300 dark:border-zink-500 rounded-lg hover:bg-slate-50 dark:hover:bg-zink-600 transition-colors duration-200" disabled>
+                                        <i data-lucide="lock" class="w-4 h-4 inline-block mr-2"></i>
+                                        Coming Soon
+                                    </button>
                                 </div>
                             </div>
                         </div>
+
                     </div>
-                    <!--end grid-->
                 </div>
-                <div class="card-body !px-2.5 !py-0">
-                    <ul class="flex flex-wrap w-full text-sm font-medium text-center nav-tabs">
-                        <li class="group active">
-                            <a href="javascript:void(0);" data-tab-toggle="" data-target="overviewTabs" class="inline-block px-4 py-2 text-base transition-all duration-300 ease-linear rounded-t-md text-slate-500 dark:text-zink-200 border-b border-transparent group-[.active]:text-custom-500 dark:group-[.active]:text-custom-500 group-[.active]:border-b-custom-500 dark:group-[.active]:border-b-custom-500 hover:text-custom-500 dark:hover:text-custom-500 active:text-custom-500 dark:active:text-custom-500 -mb-[1px]">Overview</a>
-                        </li>
-                        <li class="group">
-                            <a href="javascript:void(0);" data-tab-toggle="" data-target="documentsTabs" class="inline-block px-4 py-2 text-base transition-all duration-300 ease-linear rounded-t-md text-slate-500 dark:text-zink-200 border-b border-transparent group-[.active]:text-custom-500 dark:group-[.active]:text-custom-500 group-[.active]:border-b-custom-500 dark:group-[.active]:border-b-custom-500 hover:text-custom-500 dark:hover:text-custom-500 active:text-custom-500 dark:active:text-custom-500 -mb-[1px]">Documents</a>
-                        </li>
-                        <li class="group">
-                            <a href="javascript:void(0);" data-tab-toggle="" data-target="projectsTabs" class="inline-block px-4 py-2 text-base transition-all duration-300 ease-linear rounded-t-md text-slate-500 dark:text-zink-200 border-b border-transparent group-[.active]:text-custom-500 dark:group-[.active]:text-custom-500 group-[.active]:border-b-custom-500 dark:group-[.active]:border-b-custom-500 hover:text-custom-500 dark:hover:text-custom-500 active:text-custom-500 dark:active:text-custom-500 -mb-[1px]">Projects</a>
-                        </li>
-                        <li class="group">
-                            <a href="javascript:void(0);" data-tab-toggle="" data-target="followersTabs" class="inline-block px-4 py-2 text-base transition-all duration-300 ease-linear rounded-t-md text-slate-500 dark:text-zink-200 border-b border-transparent group-[.active]:text-custom-500 dark:group-[.active]:text-custom-500 group-[.active]:border-b-custom-500 dark:group-[.active]:border-b-custom-500 hover:text-custom-500 dark:hover:text-custom-500 active:text-custom-500 dark:active:text-custom-500 -mb-[1px]">Followers</a>
-                        </li>
-                    </ul>
-                </div>
+
             </div>
-            <!--end card-->
-
-            <div class="tab-content">
-                <div class="block tab-pane" id="overviewTabs">
-                    <div class="grid grid-cols-1 gap-x-5 2xl:grid-cols-12">
-                        <div class="2xl:col-span-9">
-                            <div class="grid grid-cols-1 gap-x-5 xl:grid-cols-12">
-                                <div class="xl:col-span-9">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h6 class="mb-3 text-15">Recent Statistics</h6>
-                                            <div id="recentStatistics" class="apex-charts" data-chart-colors='["bg-custom-500", "bg-purple-500"]' dir="ltr"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!--end col-->
-                                <div class="text-center card bg-custom-500 xl:col-span-3">
-                                    <div class="flex flex-col h-full card-body">
-                                        <img src="{{ URL::to('assets/images/medal.png') }}" alt="" class="w-2/6 mx-auto">
-                                        <div class="mt-5 mb-auto">
-                                            <h5 class="mb-1 text-white">Congratulation Paula</h5>
-                                            <p class="text-custom-200">on your outstanding achievement! Your hard work and dedication have truly paid off.</p>
-                                        </div>
-                                        <div class="p-3 mt-5 rounded-md bg-custom-600">
-                                            <h2 class="mb-1 text-white">1054</h2>
-                                            <p class="text-custom-200">It's very easy to convert your points to cash now.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!--end col-->
-                            </div>
-                            <!--end grid-->
-                            <div class="card">
-                                <div class="card-body">
-                                    <h6 class="mb-3 text-15">Overview</h6>
-                                    <p class="mb-2 text-slate-500 dark:text-zink-200">A Web Developer creates and designs different websites for clients. They are responsible for their aesthetic as well as their function. Professionals in this field may also need to be able to ensure sites are compatible with multiple types of media. Web Developers need to have a firm understanding of programming and graphical design. Having a strong resume that emphasizes these attributes makes it significantly easier to get hired as a Web Developer.</p>
-                                    <p class="text-slate-500 dark:text-zink-200">As a web designer, my objective is to make a positive impact on clients, co-workers, and the Internet using my skills and experience to design compelling and attractive websites. Solving code problems. Editing & Design with designing team in the company to build perfect web designs.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <!--end col-->
-                        <div class="2xl:col-span-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h6 class="mb-4 text-15">Personal Information</h6>
-                                    <div class="overflow-x-auto">
-                                        <table class="w-full ltr:text-left rtl:ext-right">
-                                            <tbody>
-                                                <tr>
-                                                    <th class="py-2 font-semibold ps-0" scope="row">Designation</th>
-                                                    <td class="py-2 text-right text-slate-500 dark:text-zink-200">Web Developer</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="py-2 font-semibold ps-0" scope="row">Phone No</th>
-                                                    <td class="py-2 text-right text-slate-500 dark:text-zink-200">617 219 6245</td>
-                                                </tr>p
-                                                <tr>
-                                                    <th class="py-2 font-semibold ps-0" scope="row">Birth of Date</th>
-                                                    <td class="py-2 text-right text-slate-500 dark:text-zink-200">15 Dec, 1998</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="py-2 font-semibold ps-0" scope="row">Website</th>
-                                                    <td class="py-2 text-right text-slate-500 dark:text-zink-200"><a href="http://sinergihv.com/" target="_blank" class="text-custom-500">www.sinergihv.com</a></td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="py-2 font-semibold ps-0" scope="row">Email</th>
-                                                    <td class="py-2 text-right text-slate-500 dark:text-zink-200">admin@sinergihv.com</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="py-2 font-semibold ps-0" scope="row">Location</th>
-                                                    <td class="py-2 text-right text-slate-500 dark:text-zink-200">Phnom Penh, Cambodia</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="pt-2 font-semibold ps-0" scope="row">Joining Date</th>
-                                                    <td class="pt-2 text-right text-slate-500 dark:text-zink-200">01 July 2023</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--end col-->
-                    </div>
-                    <!--end grid-->
-                </div>
-                <!--end tab pane-->
-                <div class="hidden tab-pane" id="documentsTabs">
-                    <div class="flex items-center gap-3 mb-4">
-                        <h5 class="underline grow">Documents</h5>
-                        <div class="shrink-0">
-                            <button data-modal-target="addDocuments" type="button" class="text-white btn bg-custom-500 border-custom-500 hover:text-white hover:bg-custom-600 hover:border-custom-600 focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:text-white active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100 dark:ring-custom-400/20">Add Document</button>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full align-middle border-separate whitespace-nowrap border-spacing-y-1">
-                            <thead class="text-left bg-white dark:bg-zink-700">
-                                <tr>
-                                    <th class="px-3.5 py-2.5 font-semibold border-b border-transparent">
-                                        <div class="flex items-center h-full">
-                                            <input id="Checkbox1" class="size-4 bg-white border border-slate-200 checked:bg-none dark:bg-zink-700 dark:border-zink-500 rounded-sm appearance-none arrow-none relative after:absolute after:content-['\eb7b'] after:top-0 after:left-0 after:font-remix after:leading-none after:opacity-0 checked:after:opacity-100 after:text-custom-500 checked:border-custom-500 dark:after:text-custom-500 dark:checked:border-custom-800" type="checkbox" value="">
-                                        </div>
-                                    </th>
-                                    <th class="px-3.5 py-2.5 font-semibold border-b border-transparent">Documents Type</th>
-                                    <th class="px-3.5 py-2.5 font-semibold border-b border-transparent">Documents Name</th>
-                                    <th class="px-3.5 py-2.5 font-semibold border-b border-transparent">File Size</th>
-                                    <th class="px-3.5 py-2.5 font-semibold border-b border-transparent">Modify Date</th>
-                                    <th class="px-3.5 py-2.5 font-semibold border-b border-transparent">Uploaded</th>
-                                    <th class="px-3.5 py-2.5 font-semibold border-b border-transparent">Status</th>
-                                    <th class="px-3.5 py-2.5 font-semibold border-b border-transparent text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="bg-white dark:bg-zink-700">
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <div class="flex items-center h-full">
-                                            <input id="Checkbox2" class="size-4 bg-white border border-slate-200 checked:bg-none dark:bg-zink-700 dark:border-zink-500 rounded-sm appearance-none arrow-none relative after:absolute after:content-['\eb7b'] after:top-0 after:left-0 after:font-remix after:leading-none after:opacity-0 checked:after:opacity-100 after:text-custom-500 checked:border-custom-500 dark:after:text-custom-500 dark:checked:border-custom-800" type="checkbox" value="">
-                                        </div>
-                                    </td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <span class="px-2.5 py-0.5 inline-block text-xs font-medium rounded border bg-slate-100 border-transparent text-slate-500 dark:bg-slate-500/20 dark:text-zink-200 dark:border-transparent">Docs</span>
-                                    </td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">Sinergi Hotel & Vila Docs File</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">2.5MB</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">15 Feb, 2023</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">Admin</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent"><span class="ppx-2.5 py-0.5 inline-block text-xs font-medium rounded border bg-green-100 border-transparent text-green-500 dark:bg-green-500/20 dark:border-transparent">Successful</span></td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="eye" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="file-edit" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="arrow-down-to-line" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="trash-2" class="size-3"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white dark:bg-zink-700">
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <div class="flex items-center h-full">
-                                            <input id="Checkbox2" class="size-4 bg-white border border-slate-200 checked:bg-none dark:bg-zink-700 dark:border-zink-500 rounded-sm appearance-none arrow-none relative after:absolute after:content-['\eb7b'] after:top-0 after:left-0 after:font-remix after:leading-none after:opacity-0 checked:after:opacity-100 after:text-custom-500 checked:border-custom-500 dark:after:text-custom-500 dark:checked:border-custom-800" type="checkbox" value="">
-                                        </div>
-                                    </td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <span class="px-2.5 py-0.5 inline-block text-xs font-medium rounded border bg-slate-100 border-transparent text-slate-500 dark:bg-slate-500/20 dark:text-zink-200 dark:border-transparent">PSD</span>
-                                    </td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">Sinergi Hotel & Vila Design Kit.psd</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">234.87 MB</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">29 Jan, 2023</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">Sinergi Hotel & Vila</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent"><span class="ppx-2.5 py-0.5 inline-block text-xs font-medium rounded border bg-green-100 border-transparent text-green-500 dark:bg-green-500/20 dark:border-transparent">Successful</span></td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="eye" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="file-edit" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="arrow-down-to-line" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="trash-2" class="size-3"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white dark:bg-zink-700">
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <div class="flex items-center h-full">
-                                            <input id="Checkbox2" class="size-4 bg-white border border-slate-200 checked:bg-none dark:bg-zink-700 dark:border-zink-500 rounded-sm appearance-none arrow-none relative after:absolute after:content-['\eb7b'] after:top-0 after:left-0 after:font-remix after:leading-none after:opacity-0 checked:after:opacity-100 after:text-custom-500 checked:border-custom-500 dark:after:text-custom-500 dark:checked:border-custom-800" type="checkbox" value="">
-                                        </div>
-                                    </td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <span class="px-2.5 py-0.5 inline-block text-xs font-medium rounded border bg-slate-100 border-transparent text-slate-500 dark:bg-slate-500/20 dark:text-zink-200 dark:border-transparent">SVG</span>
-                                    </td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">home Pattern Wave.svg</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">3.87 MB</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">24 Sept, 2023</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">Admin</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent"><span class="px-2.5 py-0.5 inline-block text-xs font-medium rounded border bg-red-100 border-transparent text-red-500 dark:bg-red-500/20 dark:border-transparent">Error</span></td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="eye" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="file-edit" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="arrow-down-to-line" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="trash-2" class="size-3"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white dark:bg-zink-700">
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <div class="flex items-center h-full">
-                                            <input id="Checkbox2" class="size-4 bg-white border border-slate-200 checked:bg-none dark:bg-zink-700 dark:border-zink-500 rounded-sm appearance-none arrow-none relative after:absolute after:content-['\eb7b'] after:top-0 after:left-0 after:font-remix after:leading-none after:opacity-0 checked:after:opacity-100 after:text-custom-500 checked:border-custom-500 dark:after:text-custom-500 dark:checked:border-custom-800" type="checkbox" value="">
-                                        </div>
-                                    </td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <span class="px-2.5 py-0.5 inline-block text-xs font-medium rounded border bg-slate-100 border-transparent text-slate-500 dark:bg-slate-500/20 dark:text-zink-200 dark:border-transparent">SCSS</span>
-                                    </td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">tailwind.scss</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">0.100 KB</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">03 April, 2023</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">Paula</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent"><span class="ppx-2.5 py-0.5 inline-block text-xs font-medium rounded border bg-green-100 border-transparent text-green-500 dark:bg-green-500/20 dark:border-transparent">Successful</span></td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="eye" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="file-edit" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="arrow-down-to-line" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="trash-2" class="size-3"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white dark:bg-zink-700">
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <div class="flex items-center h-full">
-                                            <input id="Checkbox2" class="size-4 bg-white border border-slate-200 checked:bg-none dark:bg-zink-700 dark:border-zink-500 rounded-sm appearance-none arrow-none relative after:absolute after:content-['\eb7b'] after:top-0 after:left-0 after:font-remix after:leading-none after:opacity-0 checked:after:opacity-100 after:text-custom-500 checked:border-custom-500 dark:after:text-custom-500 dark:checked:border-custom-800" type="checkbox" value="">
-                                        </div>
-                                    </td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <span class="px-2.5 py-0.5 inline-block text-xs font-medium rounded border bg-slate-100 border-transparent text-slate-500 dark:bg-slate-500/20 dark:text-zink-200 dark:border-transparent">MP4</span>
-                                    </td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">Sinergi Hotel & Vila Guide Video.mp4</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">149.33 MB</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">12 Nov, 2023</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">Sinergi Hotel & Vila</td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent"><span class="px-2.5 py-0.5 inline-block text-xs font-medium rounded border bg-yellow-100 border-transparent text-yellow-500 dark:bg-yellow-500/20 dark:border-transparent">Pending</span></td>
-                                    <td class="px-3.5 py-2.5 border-y border-transparent">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="eye" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="file-edit" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="arrow-down-to-line" class="size-3"></i></a>
-                                            <a href="#!" class="flex items-center justify-center transition-all duration-150 ease-linear rounded-md size-8 bg-slate-100 hover:bg-slate-200 dark:bg-zink-600 dark:hover:bg-zink-500"><i data-lucide="trash-2" class="size-3"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="flex flex-col items-center gap-4 mt-4 mb-4 md:flex-row">
-                        <div class="grow">
-                            <p class="text-slate-500 dark:text-zink-200">Showing <b>6</b> of <b>18</b> Results</p>
-                        </div>
-                        <ul class="flex flex-wrap items-center gap-2 shrink-0">
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto"><i class="size-4 rtl:rotate-180" data-lucide="chevron-left"></i></a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">1</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">2</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto active">3</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">4</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">5</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">6</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto"><i class="size-4 rtl:rotate-180" data-lucide="chevron-right"></i></a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <!--end tab pane-->
-                <div class="hidden tab-pane" id="projectsTabs">
-                    <div class="flex items-center gap-3 mb-4">
-                        <h5 class="underline grow">Projects</h5>
-                        <div class="shrink-0">
-                            <button type="button" class="text-white btn bg-custom-500 border-custom-500 hover:text-white hover:bg-custom-600 hover:border-custom-600 focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:text-white active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100 dark:ring-custom-400/20">Add Project</button>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 gap-x-5 md:grid-cols-2 2xl:grid-cols-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="flex">
-                                    <div class="grow">
-                                        <img src="{{ URL::to('assets/images/adwords.png') }}" alt="" class="h-11">
-                                    </div>
-                                    <div class="shrink-0">
-                                        <div class="relative dropdown">
-                                            <button class="flex items-center justify-center size-[37.5px] dropdown-toggle p-0 text-slate-500 btn bg-slate-200 border-slate-200 hover:text-slate-600 hover:bg-slate-300 hover:border-slate-300 focus:text-slate-600 focus:bg-slate-300 focus:border-slate-300 focus:ring focus:ring-slate-100 active:text-slate-600 active:bg-slate-300 active:border-slate-300 active:ring active:ring-slate-100 dark:bg-zink-600 dark:hover:bg-zink-500 dark:border-zink-600 dark:hover:border-zink-500 dark:text-zink-200 dark:ring-zink-400/50" id="projectDropdownmenu1" data-bs-toggle="dropdown"><i data-lucide="more-horizontal" class="size-4"></i></button>
-                                            <ul class="absolute z-50 hidden py-2 mt-1 text-left list-none bg-white rounded-md shadow-md dropdown-menu min-w-[10rem]" aria-labelledby="projectDropdownmenu1">
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="eye" class="inline-block mr-1 size-3"></i> Overview</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="file-edit" class="inline-block mr-1 size-3"></i> Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="trash-2" class="inline-block mr-1 size-3"></i> Delete</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4">
-                                    <h6 class="mb-1 text-16"><a href="#!">Chat App</a></h6>
-                                    <p class="text-slate-500 dark:text-zink-200">Allows you to communicate with your customers in web chat rooms.</p>
-                                </div>
-                                <div class="flex w-full gap-3 mt-6 text-center divide-x divide-slate-200 dark:divide-zink-500 rtl:divide-x-reverse">
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">16 July, 2023</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Due Date</p>
-                                    </div>
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">$8,740.00</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Budget</p>
-                                    </div>
-                                </div>
-                                <div class="w-full h-1.5 mt-6 rounded-full bg-slate-100 dark:bg-zink-600">
-                                    <div class="h-1.5 rounded-full bg-custom-500" style="width: 25%"></div>
-                                </div>
-                            </div>
-                        </div><!--end card & col-->
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="flex">
-                                    <div class="grow">
-                                        <img src="{{ URL::to('assets/images/app-store.png') }}" alt="" class="h-11">
-                                    </div>
-                                    <div class="shrink-0">
-                                        <div class="relative dropdown">
-                                            <button class="flex items-center justify-center size-[37.5px] dropdown-toggle p-0 text-slate-500 btn bg-slate-200 border-slate-200 hover:text-slate-600 hover:bg-slate-300 hover:border-slate-300 focus:text-slate-600 focus:bg-slate-300 focus:border-slate-300 focus:ring focus:ring-slate-100 active:text-slate-600 active:bg-slate-300 active:border-slate-300 active:ring active:ring-slate-100 dark:bg-zink-600 dark:hover:bg-zink-500 dark:border-zink-600 dark:hover:border-zink-500 dark:text-zink-200 dark:ring-zink-400/50" id="projectDropdownmenu2" data-bs-toggle="dropdown"><i data-lucide="more-horizontal" class="size-4"></i></button>
-                                            <ul class="absolute z-50 hidden py-2 mt-1 text-left list-none bg-white rounded-md shadow-md dropdown-menu min-w-[10rem]" aria-labelledby="projectDropdownmenu2">
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="eye" class="inline-block mr-1 size-3"></i> Overview</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="file-edit" class="inline-block mr-1 size-3"></i> Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="trash-2" class="inline-block mr-1 size-3"></i> Delete</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4">
-                                    <h6 class="mb-1 text-16"><a href="#!">Business Template - UI/UX design</a></h6>
-                                    <p class="text-slate-500 dark:text-zink-200">UX design process is iterative and non-linear, includes a lot of research.</p>
-                                </div>
-                                <div class="flex w-full gap-3 mt-6 text-center divide-x divide-slate-200 dark:divide-zink-500 rtl:divide-x-reverse">
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">28 Nov, 2023</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Due Date</p>
-                                    </div>
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">$10,254.00</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Budget</p>
-                                    </div>
-                                </div>
-                                <div class="w-full h-1.5 mt-6 rounded-full bg-slate-100 dark:bg-zink-600">
-                                    <div class="h-1.5 rounded-full bg-sky-500" style="width: 61%"></div>
-                                </div>
-                            </div>
-                        </div><!--end card & col-->
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="flex">
-                                    <div class="grow">
-                                        <img src="{{ URL::to('assets/images/profile.png') }}" alt="" class="w-12 h-12 rounded">
-                                    </div>
-                                    <div class="shrink-0">
-                                        <div class="relative dropdown">
-                                            <button class="flex items-center justify-center size-[37.5px] dropdown-toggle p-0 text-slate-500 btn bg-slate-200 border-slate-200 hover:text-slate-600 hover:bg-slate-300 hover:border-slate-300 focus:text-slate-600 focus:bg-slate-300 focus:border-slate-300 focus:ring focus:ring-slate-100 active:text-slate-600 active:bg-slate-300 active:border-slate-300 active:ring active:ring-slate-100 dark:bg-zink-600 dark:hover:bg-zink-500 dark:border-zink-600 dark:hover:border-zink-500 dark:text-zink-200 dark:ring-zink-400/50" id="projectDropdownmenu3" data-bs-toggle="dropdown"><i data-lucide="more-horizontal" class="size-4"></i></button>
-                                            <ul class="absolute z-50 hidden py-2 mt-1 text-left list-none bg-white rounded-md shadow-md dropdown-menu min-w-[10rem]" aria-labelledby="projectDropdownmenu3">
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="eye" class="inline-block mr-1 size-3"></i> Overview</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="file-edit" class="inline-block mr-1 size-3"></i> Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="trash-2" class="inline-block mr-1 size-3"></i> Delete</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4">
-                                    <h6 class="mb-1 text-16"><a href="#!">ABC Project Customization</a></h6>
-                                    <p class="text-slate-500 dark:text-zink-200">The process of tailoring the overall project delivery process to meet the requirements.</p>
-                                </div>
-                                <div class="flex w-full gap-3 mt-6 text-center divide-x divide-slate-200 dark:divide-zink-500 rtl:divide-x-reverse">
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">20 Oct, 2023</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Due Date</p>
-                                    </div>
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">$9,832.00</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Budget</p>
-                                    </div>
-                                </div>
-                                <div class="w-full h-1.5 mt-6 rounded-full bg-slate-100 dark:bg-zink-600">
-                                    <div class="h-1.5 rounded-full bg-green-500" style="width: 87%"></div>
-                                </div>
-                            </div>
-                        </div><!--end card & col-->
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="flex">
-                                    <div class="grow">
-                                        <img src="{{ URL::to('assets/images/profile.png') }}" alt="" class="w-12 h-12 rounded">
-                                    </div>
-                                    <div class="shrink-0">
-                                        <div class="relative dropdown">
-                                            <button class="flex items-center justify-center size-[37.5px] dropdown-toggle p-0 text-slate-500 btn bg-slate-200 border-slate-200 hover:text-slate-600 hover:bg-slate-300 hover:border-slate-300 focus:text-slate-600 focus:bg-slate-300 focus:border-slate-300 focus:ring focus:ring-slate-100 active:text-slate-600 active:bg-slate-300 active:border-slate-300 active:ring active:ring-slate-100 dark:bg-zink-600 dark:hover:bg-zink-500 dark:border-zink-600 dark:hover:border-zink-500 dark:text-zink-200 dark:ring-zink-400/50" id="projectDropdownmenu4" data-bs-toggle="dropdown"><i data-lucide="more-horizontal" class="size-4"></i></button>
-                                            <ul class="absolute z-50 hidden py-2 mt-1 text-left list-none bg-white rounded-md shadow-md dropdown-menu min-w-[10rem]" aria-labelledby="projectDropdownmenu4">
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="eye" class="inline-block mr-1 size-3"></i> Overview</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="file-edit" class="inline-block mr-1 size-3"></i> Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="trash-2" class="inline-block mr-1 size-3"></i> Delete</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4">
-                                    <h6 class="mb-1 text-16"><a href="#!">Sinergi Hotel & Vila</a></h6>
-                                    <p class="text-slate-500 dark:text-zink-200">Drawing created with Microsoft Expression Design, a drawing and design program for Windows.</p>
-                                </div>
-                                <div class="flex w-full gap-3 mt-6 text-center divide-x divide-slate-200 dark:divide-zink-500 rtl:divide-x-reverse">
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">07 Dec, 2023</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Due Date</p>
-                                    </div>
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">$11,971.00</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Budget</p>
-                                    </div>
-                                </div>
-                                <div class="w-full h-1.5 mt-6 rounded-full bg-slate-100 dark:bg-zink-600">
-                                    <div class="h-1.5 bg-purple-500 rounded-full" style="width: 65%"></div>
-                                </div>
-                            </div>
-                        </div><!--end card & col-->
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="flex">
-                                    <div class="grow">
-                                        <img src="{{ URL::to('assets/images/profile.png') }}" alt="" class="w-12 h-12 rounded">
-                                    </div>
-                                    <div class="shrink-0">
-                                        <div class="relative dropdown">
-                                            <button class="flex items-center justify-center size-[37.5px] dropdown-toggle p-0 text-slate-500 btn bg-slate-200 border-slate-200 hover:text-slate-600 hover:bg-slate-300 hover:border-slate-300 focus:text-slate-600 focus:bg-slate-300 focus:border-slate-300 focus:ring focus:ring-slate-100 active:text-slate-600 active:bg-slate-300 active:border-slate-300 active:ring active:ring-slate-100 dark:bg-zink-600 dark:hover:bg-zink-500 dark:border-zink-600 dark:hover:border-zink-500 dark:text-zink-200 dark:ring-zink-400/50" id="projectDropdownmenu5" data-bs-toggle="dropdown"><i data-lucide="more-horizontal" class="size-4"></i></button>
-                                            <ul class="absolute z-50 hidden py-2 mt-1 text-left list-none bg-white rounded-md shadow-md dropdown-menu min-w-[10rem]" aria-labelledby="projectDropdownmenu5">
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="eye" class="inline-block mr-1 size-3"></i> Overview</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="file-edit" class="inline-block mr-1 size-3"></i> Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="trash-2" class="inline-block mr-1 size-3"></i> Delete</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4">
-                                    <h6 class="mb-1 text-16"><a href="#!">HR Management</a></h6>
-                                    <p class="text-slate-500 dark:text-zink-200">The strategic approach to nurturing and supporting employees and ensuring a positive.</p>
-                                </div>
-                                <div class="flex w-full gap-3 mt-6 text-center divide-x divide-slate-200 dark:divide-zink-500 rtl:divide-x-reverse">
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">02 Jan, 2024</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Due Date</p>
-                                    </div>
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">$7,546.00</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Budget</p>
-                                    </div>
-                                </div>
-                                <div class="w-full h-1.5 mt-6 rounded-full bg-slate-100 dark:bg-zink-600">
-                                    <div class="h-1.5 bg-purple-500 rounded-full" style="width: 65%"></div>
-                                </div>
-                            </div>
-                        </div><!--end card & col-->
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="flex">
-                                    <div class="grow">
-                                        <img src="{{ URL::to('assets/images/meta.png') }}" alt="" class="h-11">
-                                    </div>
-                                    <div class="shrink-0">
-                                        <div class="relative dropdown">
-                                            <button class="flex items-center justify-center size-[37.5px] dropdown-toggle p-0 text-slate-500 btn bg-slate-200 border-slate-200 hover:text-slate-600 hover:bg-slate-300 hover:border-slate-300 focus:text-slate-600 focus:bg-slate-300 focus:border-slate-300 focus:ring focus:ring-slate-100 active:text-slate-600 active:bg-slate-300 active:border-slate-300 active:ring active:ring-slate-100 dark:bg-zink-600 dark:hover:bg-zink-500 dark:border-zink-600 dark:hover:border-zink-500 dark:text-zink-200 dark:ring-zink-400/50" id="projectDropdownmenu6" data-bs-toggle="dropdown"><i data-lucide="more-horizontal" class="size-4"></i></button>
-                                            <ul class="absolute z-50 hidden py-2 mt-1 text-left list-none bg-white rounded-md shadow-md dropdown-menu min-w-[10rem]" aria-labelledby="projectDropdownmenu6">
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="eye" class="inline-block mr-1 size-3"></i> Overview</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="file-edit" class="inline-block mr-1 size-3"></i> Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="trash-2" class="inline-block mr-1 size-3"></i> Delete</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4">
-                                    <h6 class="mb-1 text-16"><a href="#!">Finance Apps</a></h6>
-                                    <p class="text-slate-500 dark:text-zink-200">A personal budget app is a technology solution that is connected.</p>
-                                </div>
-                                <div class="flex w-full gap-3 mt-6 text-center divide-x divide-slate-200 dark:divide-zink-500 rtl:divide-x-reverse">
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">10 Feb, 2024</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Due Date</p>
-                                    </div>
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">$13,745.00</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Budget</p>
-                                    </div>
-                                </div>
-                                <div class="w-full h-1.5 mt-6 rounded-full bg-slate-100 dark:bg-zink-600">
-                                    <div class="h-1.5 bg-purple-500 rounded-full" style="width: 65%"></div>
-                                </div>
-                            </div>
-                        </div><!--end card & col-->
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="flex">
-                                    <div class="grow">
-                                        <img src="{{ URL::to('assets/images/search.png') }}" alt="" class="h-11">
-                                    </div>
-                                    <div class="shrink-0">
-                                        <div class="relative dropdown">
-                                            <button class="flex items-center justify-center size-[37.5px] dropdown-toggle p-0 text-slate-500 btn bg-slate-200 border-slate-200 hover:text-slate-600 hover:bg-slate-300 hover:border-slate-300 focus:text-slate-600 focus:bg-slate-300 focus:border-slate-300 focus:ring focus:ring-slate-100 active:text-slate-600 active:bg-slate-300 active:border-slate-300 active:ring active:ring-slate-100 dark:bg-zink-600 dark:hover:bg-zink-500 dark:border-zink-600 dark:hover:border-zink-500 dark:text-zink-200 dark:ring-zink-400/50" id="projectDropdownmenu7" data-bs-toggle="dropdown"><i data-lucide="more-horizontal" class="size-4"></i></button>
-                                            <ul class="absolute z-50 hidden py-2 mt-1 text-left list-none bg-white rounded-md shadow-md dropdown-menu min-w-[10rem]" aria-labelledby="projectDropdownmenu7">
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="eye" class="inline-block mr-1 size-3"></i> Overview</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="file-edit" class="inline-block mr-1 size-3"></i> Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="trash-2" class="inline-block mr-1 size-3"></i> Delete</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4">
-                                    <h6 class="mb-1 text-16"><a href="#!">Mailbox Design</a></h6>
-                                    <p class="text-slate-500 dark:text-zink-200">An email template is an HTML preformatted email that you can use to create your own.</p>
-                                </div>
-                                <div class="flex w-full gap-3 mt-6 text-center divide-x divide-slate-200 dark:divide-zink-500 rtl:divide-x-reverse">
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">19 Feb, 2024</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Due Date</p>
-                                    </div>
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">$9,120.00</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Budget</p>
-                                    </div>
-                                </div>
-                                <div class="w-full h-1.5 mt-6 rounded-full bg-slate-100 dark:bg-zink-600">
-                                    <div class="h-1.5 bg-purple-500 rounded-full" style="width: 65%"></div>
-                                </div>
-                            </div>
-                        </div><!--end card & col-->
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="flex">
-                                    <div class="grow">
-                                        <img src="{{ URL::to('assets/images/profile.png') }}" alt="" class="w-12 h-12 rounded">
-                                    </div>
-                                    <div class="shrink-0">
-                                        <div class="relative dropdown">
-                                            <button class="flex items-center justify-center size-[37.5px] dropdown-toggle p-0 text-slate-500 btn bg-slate-200 border-slate-200 hover:text-slate-600 hover:bg-slate-300 hover:border-slate-300 focus:text-slate-600 focus:bg-slate-300 focus:border-slate-300 focus:ring focus:ring-slate-100 active:text-slate-600 active:bg-slate-300 active:border-slate-300 active:ring active:ring-slate-100 dark:bg-zink-600 dark:hover:bg-zink-500 dark:border-zink-600 dark:hover:border-zink-500 dark:text-zink-200 dark:ring-zink-400/50" id="projectDropdownmenu8" data-bs-toggle="dropdown"><i data-lucide="more-horizontal" class="size-4"></i></button>
-                                            <ul class="absolute z-50 hidden py-2 mt-1 text-left list-none bg-white rounded-md shadow-md dropdown-menu min-w-[10rem]" aria-labelledby="projectDropdownmenu8">
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="eye" class="inline-block mr-1 size-3"></i> Overview</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="file-edit" class="inline-block mr-1 size-3"></i> Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a class="block px-4 py-1.5 text-base transition-all duration-200 ease-linear bg-white text-slate-600 dropdown-item hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500" href="#!"><i data-lucide="trash-2" class="inline-block mr-1 size-3"></i> Delete</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4">
-                                    <h6 class="mb-1 text-16"><a href="#!">Banking Management</a></h6>
-                                    <p class="text-slate-500 dark:text-zink-200">Bank management refers to the process of managing the Bank's statutory activity.</p>
-                                </div>
-                                <div class="flex w-full gap-3 mt-6 text-center divide-x divide-slate-200 dark:divide-zink-500 rtl:divide-x-reverse">
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">01 March, 2024</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Due Date</p>
-                                    </div>
-                                    <div class="px-3 grow">
-                                        <h6 class="mb-1">$24,863.00</h6>
-                                        <p class="text-slate-500 dark:text-zink-200">Budget</p>
-                                    </div>
-                                </div>
-                                <div class="w-full h-1.5 mt-6 rounded-full bg-slate-100 dark:bg-zink-600">
-                                    <div class="h-1.5 bg-purple-500 rounded-full" style="width: 65%"></div>
-                                </div>
-                            </div>
-                        </div><!--end card & col-->
-                    </div><!--end grid-->
-                    <div class="flex flex-col items-center gap-4 mt-2 mb-4 md:flex-row">
-                        <div class="grow">
-                            <p class="text-slate-500 dark:text-zink-200">Showing <b>8</b> of <b>30</b> Results</p>
-                        </div>
-                        <ul class="flex flex-wrap items-center gap-2 shrink-0">
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto"><i class="size-4 rtl:rotate-180" data-lucide="chevrons-left"></i></a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto"><i class="size-4 rtl:rotate-180" data-lucide="chevron-left"></i></a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">1</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">2</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto active">3</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">4</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">5</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">6</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto"><i class="size-4 rtl:rotate-180" data-lucide="chevron-right"></i></a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto"><i class="size-4 rtl:rotate-180" data-lucide="chevrons-right"></i></a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <!--end tab pane-->
-                <div class="hidden tab-pane" id="followersTabs">
-                    <h5 class="mb-4 underline">Followers</h5>
-                    <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-x-5">
-                        <div class="relative card">
-                            <div class="card-body">
-                                <p class="absolute inline-block px-5 py-1 text-xs ltr:left-0 rtl:right-0 text-custom-600 bg-custom-100 dark:bg-custom-500/20 top-5 ltr:rounded-e rtl:rounded-l">Executive Operations</p>
-                                <div class="flex items-center justify-end">
-                                    <p class="text-slate-500 dark:text-zink-200">Doj : 15 Jan, 2023</p>
-                                </div>
-                                <div class="mt-4 text-center">
-                                    <div class="flex justify-center">
-                                        <div class="overflow-hidden rounded-full size-20 bg-slate-100">
-                                            <img src="{{ URL::to('assets/images/avatar-3.png') }}" alt="" class="">
-                                        </div>
-                                    </div>
-                                    <a href="#!"><h4 class="mt-4 mb-2 font-semibold text-16">Ralaphe Flores </h4></a>
-                                    <div class="text-slate-500 dark:text-zink-200">
-                                        <p class="mb-1">floral12@sinergihv.com</p>
-                                        <p>+213 617 219 6245</p>
-                                        <p class="inline-block px-3 py-1 my-4 font-semibold rounded-md text-slate-600 bg-slate-100 dark:bg-zink-600 dark:text-zink-200">Exp. : 1.5 years</p>
-                                        <h4 class="text-15 text-custom-500">Salary : $463.42 <span class="text-xs font-normal text-slate-500 dark:text-zink-200">/ Month<span></span></span></h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!--end card-->
-                        <div class="relative card">
-                            <div class="card-body">
-                                <p class="absolute inline-block px-5 py-1 text-xs text-green-600 bg-green-100 ltr:left-0 rtl:right-0 dark:bg-green-500/20 top-5 ltr:rounded-e rtl:rounded-l">Project Manager</p>
-                                <div class="flex items-center justify-end">
-                                    <p class="text-slate-500 dark:text-zink-200">Doj : 29 Feb, 2023</p>
-                                </div>
-                                <div class="mt-4 text-center">
-                                    <div class="flex justify-center">
-                                        <div class="overflow-hidden rounded-full size-20 bg-slate-100">
-                                            <img src="{{ URL::to('assets/images/avatar-2.png') }}" alt="" class="">
-                                        </div>
-                                    </div>
-                                    <a href="#!">
-                                        <h4 class="mt-4 mb-2 font-semibold text-16">James Lash </h4>
-                                    </a>
-                                    <div class="text-slate-500 dark:text-zink-200">
-                                        <p class="mb-1">jameslash@sinergihv.com</p>
-                                        <p>+210 85 383 2388</p>
-                                        <p class="inline-block px-3 py-1 my-4 font-semibold rounded-md text-slate-600 bg-slate-100 dark:bg-zink-600 dark:text-zink-200">Exp. : 0.5 years</p>
-                                        <h4 class="text-15 text-custom-500">Salary : $701.77 <span class="text-xs font-normal text-slate-500 dark:text-zink-200">/ Month<span></span></span></h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!--end card-->
-                        <div class="relative card">
-                            <div class="card-body">
-                                <p class="absolute inline-block px-5 py-1 text-xs ltr:left-0 rtl:right-0 text-sky-600 bg-sky-100 dark:bg-sky-500/20 top-5 ltr:rounded-e rtl:rounded-l">React Developer</p>
-                                <div class="flex items-center justify-end">
-                                    <p class="text-slate-500 dark:text-zink-200">Doj : 04 March, 2023</p>
-                                </div>
-                                <div class="mt-4 text-center">
-                                    <div class="flex justify-center">
-                                        <div class="overflow-hidden rounded-full size-20 bg-slate-100">
-                                            <img src="{{ URL::to('assets/images/avatar-4.png') }}" alt="" class="">
-                                        </div>
-                                    </div>
-                                    <a href="#!">
-                                        <h4 class="mt-4 mb-2 font-semibold text-16">Angus Garnsey</h4>
-                                    </a>
-                                    <div class="text-slate-500 dark:text-zink-200">
-                                        <p class="mb-1">angusgarnsey@sinergihv.com</p>
-                                        <p>+210 41521 1325</p>
-                                        <p class="inline-block px-3 py-1 my-4 font-semibold rounded-md text-slate-600 bg-slate-100 dark:bg-zink-600 dark:text-zink-200">Exp. : 0.7 years</p>
-                                        <h4 class="text-15 text-custom-500">Salary : $478.32 <span class="text-xs font-normal text-slate-500 dark:text-zink-200">/ Month<span></span></span></h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!--end card-->
-                        <div class="relative card">
-                            <div class="card-body">
-                                <p class="absolute inline-block px-5 py-1 text-xs text-yellow-600 bg-yellow-100 ltr:left-0 rtl:right-0 dark:bg-yellow-500/20 top-5 ltr:rounded-e rtl:rounded-l">Shopify Developer</p>
-                                <div class="flex items-center justify-end">
-                                    <p class="text-slate-500 dark:text-zink-200">Doj : 11 March, 2023</p>
-                                </div>
-                                <div class="mt-4 text-center">
-                                    <div class="flex justify-center">
-                                        <div class="overflow-hidden rounded-full size-20 bg-slate-100">
-                                            <img src="{{ URL::to('assets/images/avatar-5.png') }}" alt="" class="">
-                                        </div>
-                                    </div>
-                                    <a href="#!">
-                                        <h4 class="mt-4 mb-2 font-semibold text-16">Matilda Marston</h4>
-                                    </a>
-                                    <div class="text-slate-500 dark:text-zink-200">
-                                        <p class="mb-1">matildamarston@sinergihv.com</p>
-                                        <p>+210 082 288 1065</p>
-                                        <p class="inline-block px-3 py-1 my-4 font-semibold rounded-md text-slate-600 bg-slate-100 dark:bg-zink-600 dark:text-zink-200">Exp. : 1 years</p>
-                                        <h4 class="text-15 text-custom-500">Salary : $120.37 <span class="text-xs font-normal text-slate-500 dark:text-zink-200">/ Month<span></span></span></h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!--end card-->
-                        <div class="relative card">
-                            <div class="card-body">
-                                <p class="absolute inline-block px-5 py-1 text-xs text-red-600 bg-red-100 ltr:left-0 rtl:right-0 dark:bg-red-500/20 top-5 ltr:rounded-e rtl:rounded-l">Angular Developer</p>
-                                <div class="flex items-center justify-end">
-                                    <p class="text-slate-500 dark:text-zink-200">Doj : 22 March, 2023</p>
-                                </div>
-                                <div class="mt-4 text-center">
-                                    <div class="flex justify-center">
-                                        <div class="overflow-hidden rounded-full size-20 bg-slate-100">
-                                            <img src="{{ URL::to('assets/images/avatar-6.png') }}" alt="" class="">
-                                        </div>
-                                    </div>
-                                    <a href="#!">
-                                        <h4 class="mt-4 mb-2 font-semibold text-16">Zachary Benjamin</h4>
-                                    </a>
-                                    <div class="text-slate-500 dark:text-zink-200">
-                                        <p class="mb-1">zacharybenjamin@sinergihv.com</p>
-                                        <p>+120 348 9730 237</p>
-                                        <p class="inline-block px-3 py-1 my-4 font-semibold rounded-md text-slate-600 bg-slate-100 dark:bg-zink-600 dark:text-zink-200">Exp. : 0 years</p>
-                                        <h4 class="text-15 text-custom-500">Salary : $89.99 <span class="text-xs font-normal text-slate-500 dark:text-zink-200">/ Month<span></span></span></h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!--end card-->
-                        <div class="relative card">
-                            <div class="card-body">
-                                <p class="absolute inline-block px-5 py-1 text-xs text-purple-600 bg-purple-100 ltr:left-0 rtl:right-0 dark:bg-purple-500/20 top-5 ltr:rounded-e rtl:rounded-l">Graphic Designer</p>
-                                <div class="flex items-center justify-end">
-                                    <p class="text-slate-500 dark:text-zink-200">Doj : 09 June, 2023</p>
-                                </div>
-                                <div class="mt-4 text-center">
-                                    <div class="flex justify-center">
-                                        <div class="overflow-hidden rounded-full size-20 bg-slate-100">
-                                            <img src="{{ URL::to('assets/images/avatar-7.png') }}" alt="" class="">
-                                        </div>
-                                    </div>
-                                    <a href="#!">
-                                        <h4 class="mt-4 mb-2 font-semibold text-16">Ruby Chomley</h4>
-                                    </a>
-                                    <div class="text-slate-500 dark:text-zink-200">
-                                        <p class="mb-1">rubychomley@sinergihv.com</p>
-                                        <p>+120 1234 56789</p>
-                                        <p class="inline-block px-3 py-1 my-4 font-semibold rounded-md text-slate-600 bg-slate-100 dark:bg-zink-600 dark:text-zink-200">Exp. : 0.2 years</p>
-                                        <h4 class="text-15 text-custom-500">Salary : $214.82 <span class="text-xs font-normal text-slate-500 dark:text-zink-200">/ Month<span></span></span></h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!--end card-->
-                        <div class="relative card">
-                            <div class="card-body">
-                                <p class="absolute inline-block px-5 py-1 text-xs text-yellow-600 bg-yellow-100 ltr:left-0 rtl:right-0 dark:bg-yellow-500/20 top-5 ltr:rounded-e rtl:rounded-l">Shopify Developer</p>
-                                <div class="flex items-center justify-end">
-                                    <p class="text-slate-500 dark:text-zink-200">Doj : 27 June, 2023</p>
-                                </div>
-                                <div class="mt-4 text-center">
-                                    <div class="flex justify-center">
-                                        <div class="overflow-hidden rounded-full size-20 bg-slate-100">
-                                            <img src="{{ URL::to('assets/images/avatar-8.png') }}" alt="" class="">
-                                        </div>
-                                    </div>
-                                    <a href="#!">
-                                        <h4 class="mt-4 mb-2 font-semibold text-16">Jesse Edouardy</h4>
-                                    </a>
-                                    <div class="text-slate-500 dark:text-zink-200">
-                                        <p class="mb-1">jessedouard@sinergihv.com</p>
-                                        <p>+87 044 017 3869</p>
-                                        <p class="inline-block px-3 py-1 my-4 font-semibold rounded-md text-slate-600 bg-slate-100 dark:bg-zink-600 dark:text-zink-200">Exp. : 1.7 years</p>
-                                        <h4 class="text-15 text-custom-500">Salary : $278.96 <span class="text-xs font-normal text-slate-500 dark:text-zink-200">/ Month<span></span></span></h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!--end card-->
-                        <div class="relative card">
-                            <div class="card-body">
-                                <p class="absolute inline-block px-5 py-1 text-xs text-orange-600 bg-orange-100 ltr:left-0 rtl:right-0 dark:bg-orange-500/20 top-5 ltr:rounded-e rtl:rounded-l">Team Leader</p>
-                                <div class="flex items-center justify-end">
-                                    <p class="text-slate-500 dark:text-zink-200">Doj : 15 July, 2023</p>
-                                </div>
-                                <div class="mt-4 text-center">
-                                    <div class="flex justify-center">
-                                        <div class="overflow-hidden rounded-full size-20 bg-slate-100">
-                                            <img src="{{ URL::to('assets/images/avatar-9.png') }}" alt="" class="">
-                                        </div>
-                                    </div>
-                                    <a href="#!">
-                                        <h4 class="mt-4 mb-2 font-semibold text-16">Xavier Bower</h4>
-                                    </a>
-                                    <div class="text-slate-500 dark:text-zink-200">
-                                        <p class="mb-1">xavierbower@sinergihv.com</p>
-                                        <p>+159 98765 32451</p>
-                                        <p class="inline-block px-3 py-1 my-4 font-semibold rounded-md text-slate-600 bg-slate-100 dark:bg-zink-600 dark:text-zink-200">Exp. : 6.7 years</p>
-                                        <h4 class="text-15 text-custom-500">Salary : $901.94 <span class="text-xs font-normal text-slate-500 dark:text-zink-200">/ Month<span></span></span></h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!--end card-->
-                    </div><!--end grid-->
-                    <div class="flex flex-col items-center gap-4 mb-4 md:flex-row">
-                        <div class="grow">
-                            <p class="text-slate-500 dark:text-zink-200">Showing <b>8</b> of <b>18</b> Results</p>
-                        </div>
-                        <ul class="flex flex-wrap items-center gap-2">
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto"><i class="size-4 rtl:rotate-180" data-lucide="chevron-left"></i></a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">1</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">2</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto active">3</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">4</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">5</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto">6</a>
-                            </li>
-                            <li>
-                                <a href="#!" class="inline-flex items-center justify-center bg-white dark:bg-zink-700 size-8 transition-all duration-150 ease-linear border border-slate-200 dark:border-zink-500 rounded text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500 hover:bg-custom-50 dark:hover:bg-custom-500/10 focus:bg-custom-50 dark:focus:bg-custom-500/10 focus:text-custom-500 dark:focus:text-custom-500 [&.active]:text-custom-50 dark:[&.active]:text-custom-50 [&.active]:bg-custom-500 dark:[&.active]:bg-custom-500 [&.active]:border-custom-500 dark:[&.active]:border-custom-500 [&.disabled]:text-slate-400 dark:[&.disabled]:text-zink-300 [&.disabled]:cursor-auto"><i class="size-4 rtl:rotate-180" data-lucide="chevron-right"></i></a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <!--end tab pane-->
-            </div>
-            <!--end tab content-->
         </div>
-        <!-- container-fluid -->
     </div>
-    <!-- End Page-content -->
 
-@section('script')
-    <!-- pages-account init js-->
-    <script src="{{ URL::to('assets/js/pages/pages-account.init.js') }}"></script>
-@endsection
+    <script>
+        function previewTtd(event) {
+            const file = event.target.files[0];
+            if (file) {
+                console.log('File selected:', file.name);
+            }
+        }
+    </script>
 @endsection

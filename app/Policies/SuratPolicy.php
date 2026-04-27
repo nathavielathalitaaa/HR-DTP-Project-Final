@@ -7,121 +7,60 @@ use App\Models\User;
 
 class SuratPolicy
 {
-    /**
-     * Determine whether the user can view any surats.
-     */
+    // Siapa saja bisa lihat list (difilter di controller)
     public function viewAny(User $user): bool
     {
         return true;
     }
 
-    /**
-     * Determine whether the user can view the surat.
-     */
+    // Lihat detail: staff hanya miliknya, approver sesuai jabatan, hr semua
     public function view(User $user, Surat $surat): bool
     {
-        // Staff hanya boleh melihat surat miliknya sendiri
         if ($user->hasRole('staff')) {
             return $user->id === $surat->user_id;
         }
-
-        // Supervisor boleh melihat semua surat dengan status submitted
-        if ($user->hasRole('supervisor')) {
-            return $surat->status === 'submitted';
-        }
-
-        // Admin boleh melihat semua surat
-        if ($user->hasRole('admin')) {
+        // Supervisor/hr dengan jabatan approval bisa lihat semua surat
+        if ($user->profile?->jabatan) {
             return true;
         }
-
-        return false;
+        return $user->hasRole('hr');
     }
 
-    /**
-     * Determine whether the user can create surats.
-     */
+    // Semua role bisa buat surat
     public function create(User $user): bool
     {
-        return $user->hasRole('staff');
+        return true;
     }
 
-    /**
-     * Determine whether the user can store surats.
-     */
     public function store(User $user): bool
     {
-        return $user->hasRole('staff');
+        return true;
     }
 
-    /**
-     * Determine whether the user can approve as supervisor.
-     */
-    public function approveSupervisor(User $user, Surat $surat): bool
+    // Hanya staff pemilik surat yang berstatus 'revised'
+    public function edit(User $user, Surat $surat): bool
     {
-        return $user->hasRole('supervisor') && $surat->status === 'submitted';
+        return $user->hasRole('staff')
+            && $user->id === $surat->user_id
+            && $surat->status === 'revised';
     }
 
-    /**
-     * Determine whether the user can reject as supervisor.
-     */
-    public function rejectSupervisor(User $user, Surat $surat): bool
+    public function update(User $user, Surat $surat): bool
     {
-        return $user->hasRole('supervisor') && $surat->status === 'submitted';
+        return $user->hasRole('staff')
+            && $user->id === $surat->user_id
+            && $surat->status === 'revised';
     }
 
-    /**
-     * Determine whether the user can approve as owner.
-     */
-    public function approveOwner(User $user, Surat $surat): bool
-    {
-        return $user->hasRole('admin') && $surat->status === 'approved_supervisor';
-    }
-
-    /**
-     * Determine whether the user can reject as owner.
-     */
-    public function rejectOwner(User $user, Surat $surat): bool
-    {
-        return $user->hasRole('admin') && $surat->status === 'approved_supervisor';
-    }
-
-    /**
-     * Determine whether the user can download surat.
-     */
+    // Download: staff hanya miliknya, siapapun dengan jabatan approval, hr semua
     public function download(User $user, Surat $surat): bool
     {
-        // Staff hanya bisa download surat miliknya sendiri (semua status)
         if ($user->hasRole('staff')) {
             return $user->id === $surat->user_id;
         }
-
-        // Supervisor bisa download semua surat yang pernah masuk tahap approvalnya (status >= submitted)
-        if ($user->hasRole('supervisor')) {
-            return in_array($surat->status, ['submitted', 'approved_supervisor', 'approved_owner', 'rejected', 'revised']);
-        }
-
-        // Admin bisa download semua surat
-        if ($user->hasRole('admin')) {
+        if ($user->profile?->jabatan) {
             return true;
         }
-
-        return false;
-    }
-
-    /**
-     * Determine whether the user can edit surat.
-     */
-    public function edit(User $user, Surat $surat): bool
-    {
-        return $user->hasRole('staff') && $user->id === $surat->user_id && $surat->status === 'revised';
-    }
-
-    /**
-     * Determine whether the user can update surat.
-     */
-    public function update(User $user, Surat $surat): bool
-    {
-        return $user->hasRole('staff') && $user->id === $surat->user_id && $surat->status === 'revised';
+        return $user->hasRole('hr');
     }
 }

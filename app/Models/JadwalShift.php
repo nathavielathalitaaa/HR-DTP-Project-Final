@@ -9,11 +9,25 @@ class JadwalShift extends Model
 {
     use HasFactory;
 
-    // kolom yang boleh diisi massal
     protected $fillable = [
         'user_id',
         'shift_id',
         'tanggal_mulai',
         'tanggal_selesai',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    public function karyawan()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(\App\Models\Shift::class, 'shift_id');
+    }
 }

@@ -22,7 +22,7 @@ class StoreSuratRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'jenis_surat' => 'required|string',
+            'jenis_surat' => 'required|string|in:resign,permohonan,surat_tugas,rekomendasi,izin,lainnya',
             'perihal' => 'required|string',
             'file_pdf' => 'nullable|file|mimes:pdf|max:5120',
         ];

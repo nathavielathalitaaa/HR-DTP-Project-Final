@@ -209,6 +209,179 @@
   /* swal2 confirm button */
   .swal2-confirm { background-color: #04A54C !important; }
 
+
+  /*
+     DESIGN SYSTEM — SINERGI HRIS
+  */
+
+  /* === STAT CARD === */
+  .ds-card {
+    background: #ffffff;
+    border: 1px solid #e8f0e8;
+    border-radius: 16px;
+    padding: 20px 24px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .ds-card::after {
+    /* progress bar dekoratif di bawah card */
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 3px; width: 100%;
+    background: linear-gradient(to right, #04A54C, #dcf5e7);
+    opacity: 0.6;
+  }
+
+  /* === STAT CARD — VARIAN WARNA PROGRESS BAR === */
+  .ds-card.ds-warn::after  { background: linear-gradient(to right, #f59e0b, #fef3c7); }
+  .ds-card.ds-info::after  { background: linear-gradient(to right, #3b82f6, #dbeafe); }
+  .ds-card.ds-danger::after { background: linear-gradient(to right, #ef4444, #fee2e2); }
+
+  /* === ICON BOX === */
+  .ds-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ds-icon.ic-green  { background: #dcf5e7; color: #04A54C; }
+  .ds-icon.ic-blue   { background: #dbeafe; color: #2563eb; }
+  .ds-icon.ic-amber  { background: #fef3c7; color: #d97706; }
+  .ds-icon.ic-red    { background: #fee2e2; color: #dc2626; }
+  .ds-icon.ic-purple { background: #ede9fe; color: #7c3aed; }
+  .ds-icon.ic-teal   { background: #ccfbf1; color: #0d9488; }
+
+  /* === BADGE LABEL === */
+  .ds-badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .ds-badge.b-green  { background: #dcf5e7; color: #14532d; }
+  .ds-badge.b-blue   { background: #dbeafe; color: #1e3a8a; }
+  .ds-badge.b-amber  { background: #fef3c7; color: #78350f; }
+  .ds-badge.b-red    { background: #fee2e2; color: #7f1d1d; }
+  .ds-badge.b-gray   { background: #f1f5f9; color: #475569; }
+  .ds-badge.b-purple { background: #ede9fe; color: #4c1d95; }
+
+  /* === SECTION CARD (container dengan judul) === */
+  .ds-section {
+    background: #ffffff;
+    border: 1px solid #e8f0e8;
+    border-radius: 16px;
+    padding: 20px 24px;
+  }
+  .ds-section-title {
+    font-size: 11px; font-weight: 800;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: #64748b;
+    padding-left: 10px;
+    border-left: 3px solid #04A54C;
+    margin-bottom: 16px;
+  }
+
+  /* === LIST ROW (untuk daftar cuti, surat, dll) === */
+  .ds-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.15s;
+  }
+  .ds-row:last-child { border-bottom: none; }
+
+  /* === AVATAR INISIAL === */
+  .ds-avatar {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  /* === BANNER WELCOME === */
+  .ds-banner {
+    background: linear-gradient(135deg, #04A54C 0%, #038f40 60%, #026d32 100%);
+    color: white;
+    border-radius: 20px;
+    padding: 24px 32px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .ds-banner::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .ds-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; right: 100px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .ds-banner-info {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 14px;
+    padding: 10px 18px;
+    backdrop-filter: blur(4px);
+  }
+
+  /* === PAGE WRAPPER (ganti .sng) === */
+  .ds-page {
+    padding: 24px;
+  }
+
+  /* === TABLE === */
+  .ds-table { width: 100%; border-collapse: collapse; }
+  .ds-table thead th {
+    background: #f8fdf9;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 12px 16px;
+    border-bottom: 2px solid #e8f0e8;
+    text-align: left;
+  }
+  .ds-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.15s;
+  }
+  .ds-table tbody tr:hover { background: #f8fdf9; }
+  .ds-table tbody td { padding: 14px 16px; font-size: 14px; color: #334155; }
+
+  /* === BUTTON === */
+  .ds-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 13px; font-weight: 700;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+  }
+  .ds-btn.btn-green {
+    background: #04A54C; color: white;
+  }
+  .ds-btn.btn-outline {
+    background: white; color: #04A54C;
+    border: 1.5px solid #04A54C;
+  }
+  .ds-btn.btn-outline:hover { background: #f0faf4; }
+  .ds-btn.btn-red { background: #fee2e2; color: #dc2626; }
+  .ds-btn.btn-red:hover { background: #fecaca; }
+
 </style>
 
 <!-- style bawaan template — jangan diubah -->
@@ -230,7 +403,7 @@
 <body class="text-base bg-body-bg text-body font-public dark:text-zink-100 dark:bg-zink-800 group-data-[skin=bordered]:bg-body-bordered group-data-[skin=bordered]:dark:bg-zink-700">
     <div class="group-data-[sidebar-size=sm]:min-h-sm group-data-[sidebar-size=sm]:relative">
         <div class="app-menu w-vertical-menu bg-vertical-menu ltr:border-r rtl:border-l border-vertical-menu-border fixed bottom-0 top-0 z-[1003] transition-all duration-75 ease-linear group-data-[sidebar-size=md]:w-vertical-menu-md group-data-[sidebar-size=sm]:w-vertical-menu-sm group-data-[sidebar-size=sm]:pt-header group-data-[sidebar=dark]:bg-vertical-menu-dark group-data-[sidebar=dark]:border-vertical-menu-dark group-data-[sidebar=brand]:bg-vertical-menu-brand group-data-[sidebar=brand]:border-vertical-menu-brand group-data-[sidebar=modern]:bg-gradient-to-tr group-data-[sidebar=modern]:to-vertical-menu-to-modern group-data-[sidebar=modern]:from-vertical-menu-form-modern group-data-[layout=horizontal]:w-full group-data-[layout=horizontal]:bottom-auto group-data-[layout=horizontal]:top-header hidden md:block print:hidden group-data-[sidebar-size=sm]:absolute group-data-[sidebar=modern]:border-vertical-menu-border-modern group-data-[layout=horizontal]:dark:bg-zink-700 group-data-[layout=horizontal]:border-t group-data-[layout=horizontal]:dark:border-zink-500 group-data-[layout=horizontal]:border-r-0 group-data-[sidebar=dark]:dark:bg-zink-700 group-data-[sidebar=dark]:dark:border-zink-600 group-data-[layout=horizontal]:group-data-[navbar=scroll]:absolute group-data-[layout=horizontal]:group-data-[navbar=bordered]:top-[calc(theme('spacing.header')_+_theme('spacing.4'))] group-data-[layout=horizontal]:group-data-[navbar=bordered]:inset-x-4 group-data-[layout=horizontal]:group-data-[navbar=hidden]:top-0 group-data-[layout=horizontal]:group-data-[navbar=hidden]:h-16 group-data-[layout=horizontal]:group-data-[navbar=bordered]:w-[calc(100%_-_2rem)] group-data-[layout=horizontal]:group-data-[navbar=bordered]:[&.sticky]:top-header group-data-[layout=horizontal]:group-data-[navbar=bordered]:rounded-b-md group-data-[layout=horizontal]:shadow-md group-data-[layout=horizontal]:shadow-slate-500/10 group-data-[layout=horizontal]:dark:shadow-zink-500/10 group-data-[layout=horizontal]:opacity-0">
-            <div class="flex items-center justify-center px-5 text-center h-header group-data-[layout=horizontal]:hidden group-data-[sidebar-size=sm]:fixed group-data-[sidebar-size=sm]:top-0 group-data-[sidebar-size=sm]:bg-vertical-menu group-data-[sidebar-size=sm]:group-data-[sidebar=dark]:bg-vertical-menu-dark group-data-[sidebar-size=sm]:group-data-[sidebar=brand]:bg-vertical-menu-brand group-data-[sidebar-size=sm]:group-data-[sidebar=modern]:bg-gradient-to-br group-data-[sidebar-size=sm]:group-data-[sidebar=modern]:to-vertical-menu-to-modern group-data-[sidebar-size=sm]:group-data-[sidebar=modern]:from-vertical-menu-form-modern group-data-[sidebar-size=sm]:group-data-[sidebar=modern]:bg-vertical-menu-modern group-data-[sidebar-size=sm]:z-10 group-data-[sidebar-size=sm]:w-[calc(theme('spacing.vertical-menu-sm')_-_1px)] group-data-[sidebar-size=sm]:group-data-[sidebar=dark]:dark:bg-zink-700">
+            <div class="flex items-center justify-center px-5 text-center h-header !hidden group-data-[layout=horizontal]:hidden group-data-[sidebar-size=sm]:fixed group-data-[sidebar-size=sm]:top-0 group-data-[sidebar-size=sm]:bg-vertical-menu group-data-[sidebar-size=sm]:group-data-[sidebar=dark]:bg-vertical-menu-dark group-data-[sidebar-size=sm]:group-data-[sidebar=brand]:bg-vertical-menu-brand group-data-[sidebar-size=sm]:group-data-[sidebar=modern]:bg-gradient-to-br group-data-[sidebar-size=sm]:group-data-[sidebar=modern]:to-vertical-menu-to-modern group-data-[sidebar-size=sm]:group-data-[sidebar=modern]:from-vertical-menu-form-modern group-data-[sidebar-size=sm]:group-data-[sidebar=modern]:bg-vertical-menu-modern group-data-[sidebar-size=sm]:z-10 group-data-[sidebar-size=sm]:w-[calc(theme('spacing.vertical-menu-sm')_-_1px)] group-data-[sidebar-size=sm]:group-data-[sidebar=dark]:dark:bg-zink-700">
                 <a href="{{ route('home') }}" class="group-data-[sidebar=dark]:hidden group-data-[sidebar=brand]:hidden group-data-[sidebar=modern]:hidden">
                     <span class="hidden group-data-[sidebar-size=sm]:block">
                         <img src="{{ URL::to('assets/images/logo.png') }}" alt="" class="h-6 mx-auto">
@@ -453,12 +626,6 @@
                                         <li>
                                             <a class="block ltr:pr-4 rtl:pl-4 py-1.5 text-base font-medium transition-all duration-200 ease-linear text-slate-600 dropdown-item hover:text-custom-500 focus:text-custom-500 dark:text-zink-200 dark:hover:text-custom-500 dark:focus:text-custom-500" href="apps-chat.html">
                                                 <i data-lucide="messages-square" class="inline-block size-4 ltr:mr-2 rtl:ml-2"></i> Chat
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="block ltr:pr-4 rtl:pl-4 py-1.5 text-base font-medium transition-all duration-200 ease-linear text-slate-600 dropdown-item hover:text-custom-500 focus:text-custom-500 dark:text-zink-200 dark:hover:text-custom-500 dark:focus:text-custom-500" href="pages-pricing.html">
-                                                <i data-lucide="gem" class="inline-block size-4 ltr:mr-2 rtl:ml-2"></i> Upgrade 
-                                                <span class="inline-flex items-center justify-center w-auto h-5 ltr:ml-2 rtl:mr-2 px-1 text-[12px] font-medium border rounded text-white bg-sky-500 border-sky-500">Pro</span>
                                             </a>
                                         </li>
                                         <li class="pt-2 mt-2 border-t border-slate-200 dark:border-zink-500">

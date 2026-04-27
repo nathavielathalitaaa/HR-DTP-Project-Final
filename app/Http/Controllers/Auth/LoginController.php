@@ -60,14 +60,11 @@ class LoginController extends Controller
                 flash()->success('Login successful :)');
                 
                 // Redirect berdasarkan role
-                if ($user->hasRole('admin')) {
+                if ($user->hasRole('hr')) {
                     return redirect()->route('home');
-                } elseif ($user->hasRole('supervisor')) {
-                    return redirect()->route('surat.index');
-                } else {
-                    // staff dan role lainnya
-                    return redirect()->route('surat.index');
                 }
+                
+                return redirect()->route('surat.index');
             } else {
                 flash()->error('Error: Wrong username or password :)');
                 return redirect('login');

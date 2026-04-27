@@ -14,10 +14,10 @@ class DataAwalSeeder extends Seeder
      */
     public function run(): void
     {
-        // buat 3 role untuk spatie permission: staff, supervisor, admin
+        // buat 3 role untuk spatie permission: staff, supervisor, hr
         DB::table('roles')->insert([
             [
-                'name' => 'admin',
+                'name' => 'hr',
                 'guard_name' => 'web',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -37,34 +37,34 @@ class DataAwalSeeder extends Seeder
         ]);
 
         // ambil role ids
-        $adminRole = DB::table('roles')->where('name', 'admin')->first();
+        $hrRole = DB::table('roles')->where('name', 'hr')->first();
         $supervisorRole = DB::table('roles')->where('name', 'supervisor')->first();
         $staffRole = DB::table('roles')->where('name', 'staff')->first();
 
-        // buat user admin awal
-        $adminUser = DB::table('users')->insertGetId([
-            'user_id' => 'KH-0001',
-            'name' => 'Administrator',
-            'email' => 'admin@hris.test',
+        // buat user hr demo
+        $hrUser = DB::table('users')->insertGetId([
+            'user_id' => 'HR-0001',
+            'name' => 'Admin Utama',
+            'email' => 'admin@company.com',
             'password' => Hash::make('password'),
             'status' => 'aktif',
-            'role_name' => 'admin',
+            'role_name' => 'hr',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        // assign role admin ke user admin
+        // assign role hr ke user hr
         DB::table('model_has_roles')->insert([
-            'role_id' => $adminRole->id,
+            'role_id' => $hrRole->id,
             'model_type' => 'App\\Models\\User',
-            'model_id' => $adminUser,
+            'model_id' => $hrUser,
         ]);
 
         // buat user supervisor demo
         $supervisorUser = DB::table('users')->insertGetId([
-            'user_id' => 'KH-0002',
-            'name' => 'Budi Supervisor',
-            'email' => 'supervisor@hris.test',
+            'user_id' => 'SUP-0001',
+            'name' => 'Supervisor HR',
+            'email' => 'supervisor@company.com',
             'password' => Hash::make('password'),
             'status' => 'aktif',
             'role_name' => 'supervisor',
@@ -81,9 +81,9 @@ class DataAwalSeeder extends Seeder
 
         // buat user staff demo
         $staffUser = DB::table('users')->insertGetId([
-            'user_id' => 'KH-0003',
-            'name' => 'Andi Staff',
-            'email' => 'staff@hris.test',
+            'user_id' => 'STF-0001',
+            'name' => 'Staff Karyawan',
+            'email' => 'staff@company.com',
             'password' => Hash::make('password'),
             'status' => 'aktif',
             'role_name' => 'staff',

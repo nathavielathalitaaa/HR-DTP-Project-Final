@@ -10,8 +10,10 @@ use App\Models\User;
 use App\Models\Leave;
 use App\Models\Holiday;
 use App\Models\Department;
+use App\Models\Absensi;
 use Illuminate\Http\Request;
 use App\Models\LeaveInformation;
+use Carbon\Carbon;
 
 class HRController extends Controller
 {
@@ -362,7 +364,50 @@ class HRController extends Controller
     /** attendance Main */
     public function attendanceMain()
     {
-        return view('HR.Attendance.attendance-main');
+        try {
+            // Total karyawan aktif
+            $totalEmployee = User::where('status', 'aktif')->count();
+            
+            // Absensi hari ini (hadir)
+            $today = Carbon::today();
+            $hadirHariIni = Absensi::where('tanggal', $today)
+                ->where('status', 'hadir')
+                ->count();
+            
+            // Absensi hari ini (total yang tidak hadir)
+            $absenHariIni = $totalEmployee - $hadirHariIni;
+            
+            // Hitung hari kerja (Senin-Jumat) di bulan berjalan sampai hari ini
+            $hariKerja = 0;
+            $startMonth = Carbon::now()->startOfMonth();
+            $endDate = $today;
+            
+            $current = $startMonth->copy();
+            while ($current <= $endDate) {
+                // Senin (1) sampai Jumat (5)
+                if ($current->dayOfWeek >= 1 && $current->dayOfWeek <= 5) {
+                    $hariKerja++;
+                }
+                $current->addDay();
+            }
+            
+            // Data absensi hari ini dengan relasi user
+            $absensiHariIni = Absensi::with('user')
+                ->where('tanggal', $today)
+                ->get();
+            
+            return view('HR.Attendance.attendance-main', compact(
+                'totalEmployee',
+                'hadirHariIni',
+                'absenHariIni',
+                'hariKerja',
+                'absensiHariIni'
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Error in attendanceMain: ' . $e->getMessage());
+            flash()->error('Terjadi kesalahan saat memuat data absensi');
+            return back();
+        }
     }
 
     /** department */

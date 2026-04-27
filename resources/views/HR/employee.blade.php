@@ -3,35 +3,24 @@
     <!-- Page-content -->
     <div class="group-data-[sidebar-size=lg]:ltr:md:ml-vertical-menu group-data-[sidebar-size=lg]:rtl:md:mr-vertical-menu group-data-[sidebar-size=md]:ltr:ml-vertical-menu-md group-data-[sidebar-size=md]:rtl:mr-vertical-menu-md group-data-[sidebar-size=sm]:ltr:ml-vertical-menu-sm group-data-[sidebar-size=sm]:rtl:mr-vertical-menu-sm pt-[calc(theme('spacing.header')_*_1)] pb-[calc(theme('spacing.header')_*_0.8)] px-4 group-data-[navbar=bordered]:pt-[calc(theme('spacing.header')_*_1.3)] group-data-[navbar=hidden]:pt-0 group-data-[layout=horizontal]:mx-auto group-data-[layout=horizontal]:max-w-screen-2xl group-data-[layout=horizontal]:px-0 group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:ltr:md:ml-auto group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:rtl:md:mr-auto group-data-[layout=horizontal]:md:pt-[calc(theme('spacing.header')_*_1.6)] group-data-[layout=horizontal]:px-3 group-data-[layout=horizontal]:group-data-[navbar=hidden]:pt-[calc(theme('spacing.header')_*_0.9)]">
         <div class="container-fluid group-data-[content=boxed]:max-w-boxed mx-auto">
-            <div class="flex flex-col gap-2 py-4 md:flex-row md:items-center print:hidden">
-                <div class="grow">
-                    <h5 class="text-16">Employee List</h5>
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h4 class="text-xl font-bold text-slate-900">Daftar Karyawan</h4>
+                    <p class="text-sm text-slate-500 mt-0.5">Kelola data karyawan perusahaan</p>
                 </div>
-                <ul class="flex items-center gap-2 text-sm font-normal shrink-0">
-                    <li class="relative before:content-['\ea54'] before:font-remix ltr:before:-right-1 rtl:before:-left-1  before:absolute before:text-[18px] before:-top-[3px] ltr:pr-4 rtl:pl-4 before:text-slate-400 dark:text-zink-200">
-                        <a href="#!" class="text-slate-400 dark:text-zink-200">HR Management</a>
-                    </li>
-                    <li class="text-slate-700 dark:text-zink-100">
-                        Employee List
-                    </li>
-                </ul>
             </div>
-            <div class="card">
-                <div class="card-body">
-                    <div class="flex items-center">
-                        <h6 class="text-15 grow">Employee List</h6>
-                        <div class="shrink-0">
-                            <button data-modal-target="addEmployeeModal" type="button" class="text-white btn bg-custom-500 border-custom-500 hover:text-white hover:bg-custom-600 hover:border-custom-600 focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:text-white active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100 dark:ring-custom-400/20">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" class="lucide lucide-plus inline-block size-4">
-                                    <path d="M5 12h14"></path>
-                                    <path d="M12 5v14"></path>
-                                </svg> 
-                                <span class="align-middle">Add Employee</span>
-                            </button>
-                        </div>
+            <div class="ds-section">
+                <div class="flex items-center justify-between mb-6">
+                    <h5 class="text-lg font-semibold text-slate-900">Daftar Lengkap</h5>
+                    <div class="shrink-0">
+                        <button data-modal-target="addEmployeeModal" type="button" class="ds-btn btn-green">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Tambah Karyawan
+                        </button>
                     </div>
-                    <br>
-                    <table id="alternativePagination" class="display" style="width:100%">
+                </div>
+                <div class="overflow-x-auto">
+                    <table id="alternativePagination" class="ds-table" style="width:100%">
                         <thead>
                             <tr>
                                 <th>No</th>
@@ -55,7 +44,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($employeeList as $key => $employee)
+                            @forelse($employeeList as $key => $employee)
                                 @php
                                     $fullName = $employee->name;
                                     $parts = explode(' ', $fullName);
@@ -99,17 +88,17 @@
                                     <td class="department">{{ $employee->department }}</td>
                                     <td class="px-3.5 py-2.5 first:pl-5 last:pr-5">
                                         @if($employee->status == 'Active')
-                                            <span class="px-2.5 py-0.5 text-xs font-medium rounded border bg-green-100 border-transparent text-green-500 dark:bg-green-500/20 dark:border-transparent inline-flex items-center">
+                                            <span class="ds-badge b-green">
                                                 <i data-lucide="check-circle" class="size-3 mr-1.5"></i> 
                                                 {{ $employee->status }}
                                             </span>
                                         @elseif($employee->status == 'Inactive')
-                                            <span class="px-2.5 py-0.5 inline-flex items-center text-xs font-medium rounded border bg-slate-100 border-transparent text-slate-500 dark:bg-slate-500/20 dark:text-zink-200 dark:border-transparent status">
+                                            <span class="ds-badge b-amber">
                                                 <i data-lucide="loader" class="size-3 mr-1.5"></i>
                                                 {{ $employee->status }}
                                             </span>
                                         @elseif($employee->status == 'Disable')
-                                            <span class="px-2.5 py-0.5 inline-flex items-center text-xs font-medium rounded border bg-red-100 border-transparent text-red-500 dark:bg-red-500/20 dark:border-transparent status">
+                                            <span class="ds-badge b-red">
                                                 <i data-lucide="x" class="size-3 mr-1.5"></i>
                                                 {{ $employee->status }}
                                             </span>
@@ -123,25 +112,44 @@
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="18" class="px-3.5 py-8">
+                                        <div class="flex flex-col items-center justify-center py-8 px-4 text-center">
+                                            <div class="mb-4 p-4 rounded-full bg-slate-100">
+                                                <i data-lucide="users" class="w-8 h-8 text-slate-400"></i>
+                                            </div>
+                                            <h3 class="text-base font-semibold text-slate-700 mb-1">Belum ada karyawan</h3>
+                                            <p class="text-sm text-slate-500 mb-4">Mulai dengan menambahkan data karyawan baru</p>
+                                            <button data-modal-target="addEmployeeModal" type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-custom-500 hover:bg-custom-600 text-white font-semibold rounded-lg transition-all text-sm">
+                                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                                Tambah Karyawan
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- ──────────────────────────────────── OLD CODE BELOW FOR REFERENCE ──────────────────────────────────── --}}
     <!-- End Page-content -->
 
-    <!--add Employee-->
-    <div id="addEmployeeModal" modal-center="" class="fixed flex flex-col hidden transition-all duration-300 ease-in-out left-2/4 z-drawer -translate-x-2/4 -translate-y-2/4 show">
-        <div class="w-screen md:w-[30rem] bg-white shadow rounded-md dark:bg-zink-600">
-            <div class="flex items-center justify-between p-4 border-b dark:border-zink-500">
-                <h5 class="text-16">Add Employee</h5>
+    {{-- Add Employee Modal --}}
+    <div id="addEmployeeModal" modal-center="" class="fixed flex flex-col hidden transition-all duration-300 ease-in-out left-2/4 z-50 -translate-x-2/4 -translate-y-2/4">
+        <div class="fixed inset-0 bg-black/40 hidden" id="addEmployeeModal_backdrop"></div>
+        <div class="w-screen md:w-96 bg-white rounded-2xl shadow-2xl p-6 relative z-50">
+            <div class="flex items-center justify-between mb-4">
+                <h5 class="text-lg font-bold text-slate-900">Tambah Karyawan Baru</h5>
                 <button data-modal-close="addEmployeeModal" class="transition-all duration-200 ease-linear text-slate-400 hover:text-red-500">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <div class="max-h-[calc(theme('height.screen')_-_180px)] p-4 overflow-y-auto">
+            <div class="max-h-[calc(theme('height.screen')_-_180px)] overflow-y-auto">
                 <form class="create-form" id="create-form" action="{{ route('hr/employee/save') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" value="" name="id" id="id">
@@ -289,9 +297,9 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="reset" id="close-modal" data-modal-close="addEmployeeModal" class="text-red-500 bg-white btn hover:text-red-500 hover:bg-red-100 focus:text-red-500 focus:bg-red-100 active:text-red-500 active:bg-red-100 dark:bg-zink-600 dark:hover:bg-red-500/10 dark:focus:bg-red-500/10 dark:active:bg-red-500/10">Cancel</button>
-                        <button type="submit" id="addNew" class="text-white btn bg-custom-500 border-custom-500 hover:text-white hover:bg-custom-600 hover:border-custom-600 focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:text-white active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100 dark:ring-custom-400/20 addEmployeeModal">Add Employee</button>
+                    <div class="flex justify-end gap-2 mt-6">
+                        <button type="reset" id="close-modal" data-modal-close="addEmployeeModal" class="ds-btn btn-outline">Batal</button>
+                        <button type="submit" id="addNew" class="ds-btn btn-green">Simpan Karyawan</button>
                     </div>
                 </form>
             </div>
@@ -299,16 +307,17 @@
     </div>
     <!--end add Employee-->
 
-    <!--edit Employee-->
-    <div id="editEmployeeModal" modal-center="" class="fixed flex flex-col hidden transition-all duration-300 ease-in-out left-2/4 z-drawer -translate-x-2/4 -translate-y-2/4 show ">
-        <div class="w-screen md:w-[30rem] bg-white shadow rounded-md dark:bg-zink-600">
-            <div class="flex items-center justify-between p-4 border-b dark:border-zink-500">
-                <h5 class="text-16">Edit Employee</h5>
+    {{-- Edit Employee Modal --}}
+    <div id="editEmployeeModal" modal-center="" class="fixed flex flex-col hidden transition-all duration-300 ease-in-out left-2/4 z-50 -translate-x-2/4 -translate-y-2/4">
+        <div class="fixed inset-0 bg-black/40 hidden" id="editEmployeeModal_backdrop"></div>
+        <div class="w-screen md:w-96 bg-white rounded-2xl shadow-2xl p-6 relative z-50">
+            <div class="flex items-center justify-between mb-4">
+                <h5 class="text-lg font-bold text-slate-900">Edit Karyawan</h5>
                 <button data-modal-close="editEmployeeModal" class="transition-all duration-200 ease-linear text-slate-400 hover:text-red-500">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <div class="max-h-[calc(theme('height.screen')_-_180px)] p-4 overflow-y-auto">
+            <div class="max-h-[calc(theme('height.screen')_-_180px)] overflow-y-auto">
                 <form class="create-form" id="create-form" action="{{ route('hr/employee/update') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="id" id="e_id">
@@ -457,9 +466,9 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button type="reset" id="close-modal" data-modal-close="editEmployeeModal" class="text-red-500 bg-white btn hover:text-red-500 hover:bg-red-100 focus:text-red-500 focus:bg-red-100 active:text-red-500 active:bg-red-100 dark:bg-zink-600 dark:hover:bg-red-500/10 dark:focus:bg-red-500/10 dark:active:bg-red-500/10">Cancel</button>
-                        <button type="submit" id="addNew" class="text-white btn bg-custom-500 border-custom-500 hover:text-white hover:bg-custom-600 hover:border-custom-600 focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:text-white active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100 dark:ring-custom-400/20 ">Update Employee</button>
+                    <div class="flex justify-end gap-2 mt-6">
+                        <button type="reset" id="close-modal" data-modal-close="editEmployeeModal" class="ds-btn btn-outline">Batal</button>
+                        <button type="submit" id="addNew" class="ds-btn btn-green">Update Karyawan</button>
                     </div>
                 </form>
             </div>
@@ -577,4 +586,25 @@
         }
     </script>
 @endsection
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('alternativePagination')) {
+        new DataTable('#alternativePagination', {
+            pagingType: 'full_numbers',
+            columnDefs: [
+                { orderable: false, targets: [0, 3, 17] }
+            ],
+            language: {
+                search: 'Cari:',
+                lengthMenu: 'Tampilkan _MENU_ data',
+                info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+                paginate: { first: 'Pertama', last: 'Terakhir', next: 'Selanjutnya', previous: 'Sebelumnya' },
+                emptyTable: 'Tidak ada data'
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

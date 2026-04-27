@@ -3,223 +3,242 @@
 namespace App\Http\Controllers;
 
 use App\Models\Surat;
+use App\Services\ApprovalService;
+use App\Services\PinVerificationService;
+use App\Services\ApprovalCoverService;
 use App\Http\Requests\Surat\StoreSuratRequest;
 use Illuminate\Http\Request;
-use Auth;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Auth;
 
 class SuratController extends Controller
 {
-    /**
-     * Middleware untuk controller
-     */
-    public function __construct()
-    {
+    public function __construct(
+        private ApprovalService $approval,
+        private PinVerificationService $pinService,
+        private ApprovalCoverService $coverService,
+    ) {
         $this->middleware('auth');
     }
 
-    /**
-     * Halaman daftar surat
-     */
+    // ── INDEX ───────────────────────────────────────────────
     public function index()
     {
-        $surats = Surat::with('user')->latest()->paginate(10);
+        $user    = Auth::user()->load('profile');
+        $jabatan = $user->profile?->jabatan;
+
+    if ($jabatan) {
+        $surats = Surat::with(['user', 'approvals'])
+            ->whereHas('approvals', function ($q) use ($jabatan) {
+                $q->where('jabatan', $jabatan)
+                ->whereIn('status', ['waiting', 'approved', 'rejected', 'pending']) // sudah benar
+                ->where('document_type', 'LIKE', 'surat_%');
+            })
+            ->latest()->paginate(15);
+        } elseif ($user->hasRole('staff')) {
+            // Staff — hanya surat milik sendiri
+            $surats = Surat::with(['user', 'approvals'])
+                ->where('user_id', $user->id)
+                ->latest()->paginate(15);
+        } else {
+            // HR / Supervisor tanpa jabatan — lihat semua
+            $surats = Surat::with(['user', 'approvals'])
+                ->latest()->paginate(15);
+        }
+
         return view('surat.index', compact('surats'));
     }
 
-    /**
-     * Halaman form buat surat baru
-     */
+    // ── CREATE ──────────────────────────────────────────────
     public function create()
     {
+        $this->authorize('create', Surat::class);
         return view('surat.create');
     }
 
-    /**
-     * Simpan surat baru
-     */
+    // ── STORE ───────────────────────────────────────────────
     public function store(StoreSuratRequest $request)
     {
         $this->authorize('store', Surat::class);
-
-        $validated = $request->validated();
 
         $fileName = null;
         if ($request->hasFile('file_pdf')) {
             $fileName = $request->file('file_pdf')->store('surat', 'public');
         }
 
-        Surat::create([
-            'user_id' => Auth::id(),
+        $surat = Surat::create([
+            'user_id'     => Auth::id(),
             'nomor_surat' => $this->generateNomorSurat(),
-            'jenis_surat' => $validated['jenis_surat'],
-            'perihal' => $validated['perihal'],
-            'file_pdf' => $fileName,
-            'status' => 'submitted',
+            'jenis_surat' => $request->validated()['jenis_surat'],
+            'perihal'     => $request->validated()['perihal'],
+            'file_pdf'    => $fileName,
+            'status'      => 'submitted',
         ]);
 
-        return redirect()->route('surat.index')
-            ->with('success', 'Surat berhasil dibuat');
+        // Init approval 4 step
+        $this->approval->initApproval('surat_' . $surat->jenis_surat, $surat->id);
+
+        flash()->success('Surat berhasil dibuat dan dikirim untuk approval.');
+        return redirect()->route('surat.show', $surat->id);
     }
 
-    /**
-     * Tampilkan detail surat
-     */
+    // ── SHOW ────────────────────────────────────────────────
     public function show(Surat $surat)
     {
-        return view('surat.show', compact('surat'));
+        $this->authorize('view', $surat);
+
+        $documentType = 'surat_' . $surat->jenis_surat;
+        $steps      = $this->approval->getStatus($documentType, $surat->id);
+        $authUser   = Auth::user()->load('profile');
+        $canApprove = $this->approval->canApprove($documentType, $surat->id, $authUser);
+        $waitingStep = $this->approval->getWaitingStep($documentType, $surat->id);
+
+        return view('surat.show', compact('surat', 'steps', 'canApprove', 'waitingStep'));
     }
 
-    /**
-     * Halaman edit surat (revisi)
-     */
+    // ── EDIT ────────────────────────────────────────────────
     public function edit(Surat $surat)
     {
         $this->authorize('edit', $surat);
         return view('surat.edit', compact('surat'));
     }
 
-    /**
-     * Update surat (revisi file PDF)
-     */
+    // ── UPDATE (resubmit setelah revisi) ────────────────────
     public function update(StoreSuratRequest $request, Surat $surat)
     {
         $this->authorize('update', $surat);
 
-        $validated = $request->validated();
-
         if ($request->hasFile('file_pdf')) {
-            // Hapus file lama jika ada
             if ($surat->file_pdf && file_exists(storage_path('app/public/' . $surat->file_pdf))) {
                 unlink(storage_path('app/public/' . $surat->file_pdf));
             }
-
-            // Simpan file baru
-            $fileName = $request->file('file_pdf')->store('surat', 'public');
-            $surat->update(['file_pdf' => $fileName]);
+            $surat->update(['file_pdf' => $request->file('file_pdf')->store('surat', 'public')]);
         }
 
-        // Update status menjadi submitted kembali
         $surat->update([
-            'status' => 'submitted',
+            'status'        => 'submitted',
             'catatan_revisi' => null,
-            'approved_by_supervisor' => null,
-            'approved_by_owner' => null,
         ]);
 
-        return redirect()->route('surat.show', $surat->id)
-            ->with('success', 'Surat berhasil direvisi dan dikirim kembali untuk approval');
+        // Reset approval dari step 1
+        $this->approval->resubmit('surat_' . $surat->jenis_surat, $surat->id);
+
+        flash()->success('Surat berhasil direvisi dan dikirim ulang untuk approval.');
+        return redirect()->route('surat.show', $surat->id);
     }
 
-    /**
-     * Approval oleh supervisor
-     */
-    public function approveSupervisor(Request $request, Surat $surat)
+    // ── APPROVE ─────────────────────────────────────────────
+    public function approve(Request $request, Surat $surat)
     {
-        $this->authorize('approveSupervisor', $surat);
-
-        $surat->update([
-            'status' => 'approved_supervisor',
-            'approved_by_supervisor' => Auth::id(),
-        ]);
-
-        return redirect()->route('surat.show', $surat->id)
-            ->with('success', 'Surat berhasil disetujui supervisor');
-    }
-
-    /**
-     * Penolakan oleh supervisor
-     */
-    public function rejectSupervisor(Request $request, Surat $surat)
-    {
-        $this->authorize('rejectSupervisor', $surat);
-
         $request->validate([
-            'catatan_revisi' => 'required|string|min:5',
+            'catatan' => 'nullable|string|max:500',
+            'pin'     => 'required|string',
         ], [
-            'catatan_revisi.required' => 'Catatan revisi wajib diisi',
-            'catatan_revisi.min' => 'Catatan revisi minimal 5 karakter',
+            'pin.required' => 'PIN wajib diisi untuk menyetujui surat.',
         ]);
 
+        $user = Auth::user()->load('profile');
+
+        // Verifikasi PIN
+        if (!$this->pinService->verify($user, $request->pin)) {
+            flash()->error('PIN salah. Silakan coba lagi.');
+            return redirect()->back();
+        }
+
+        // Ambil path TTD untuk snapshot
+        $ttdSnapshot = $this->pinService->getTtdPath($user);
+
+        $result = $this->approval->approve(
+            'surat_' . $surat->jenis_surat,
+            $surat->id,
+            $user,
+            $request->catatan ?? '',
+            $ttdSnapshot
+        );
+
+        \Log::info('Approve result', $result);
+        \Log::info('Cover PDF path', ['cover_pdf_path' => $surat->cover_pdf_path]);
+
+        if (!$result['success']) {
+            flash()->error($result['message']);
+            return redirect()->back();
+        }
+
+        // Jika semua step selesai, update status surat + generate PDF cover
+        if ($result['selesai']) {
+            $surat->update(['status' => 'approved_owner']);
+
+            // Generate PDF cover approval
+            try {
+                    $coverPath = $this->coverService->generateCover($surat);
+                    $surat->update(['cover_pdf_path' => $coverPath]);
+                    \Log::info('Cover generated: ' . $coverPath); // tambah ini
+                } catch (\Exception $e) {
+                    \Log::error('Gagal generate cover PDF: ' . $e->getMessage());
+                }
+        }
+
+        flash()->success($result['message']);
+        return redirect()->route('surat.show', $surat->id);
+    }
+
+    // ── REJECT ──────────────────────────────────────────────
+    public function reject(Request $request, Surat $surat)
+    {
+        $request->validate([
+            'catatan_revisi' => 'required|string|min:5|max:500',
+        ], [
+            'catatan_revisi.required' => 'Catatan revisi wajib diisi saat menolak.',
+            'catatan_revisi.min'      => 'Catatan revisi minimal 5 karakter.',
+        ]);
+
+        $result = $this->approval->reject(
+            'surat_' . $surat->jenis_surat,
+            $surat->id,
+            Auth::user(),
+            $request->catatan_revisi
+        );
+
+        if (!$result['success']) {
+            flash()->error($result['message']);
+            return redirect()->back();
+        }
+
+        // Update status surat kembali ke 'revised'
         $surat->update([
-            'status' => 'revised',
+            'status'         => 'revised',
             'catatan_revisi' => $request->catatan_revisi,
         ]);
 
-        return redirect()->route('surat.show', $surat->id)
-            ->with('success', 'Surat ditolak. Pengguna telah diberitahu untuk merevisi');
+        flash()->success($result['message']);
+        return redirect()->route('surat.show', $surat->id);
     }
 
-    /**
-     * Approval oleh owner (admin)
-     */
-    public function approveOwner(Request $request, Surat $surat)
-    {
-        $this->authorize('approveOwner', $surat);
-
-        $surat->update([
-            'status' => 'approved_owner',
-            'approved_by_owner' => Auth::id(),
-        ]);
-
-        return redirect()->route('surat.show', $surat->id)
-            ->with('success', 'Surat berhasil disetujui oleh Owner');
-    }
-
-    /**
-     * Penolakan oleh owner (admin)
-     */
-    public function rejectOwner(Request $request, Surat $surat)
-    {
-        $this->authorize('rejectOwner', $surat);
-
-        $request->validate([
-            'catatan_revisi' => 'required|string|min:5',
-        ], [
-            'catatan_revisi.required' => 'Catatan revisi wajib diisi',
-            'catatan_revisi.min' => 'Catatan revisi minimal 5 karakter',
-        ]);
-
-        $surat->update([
-            'status' => 'revised',
-            'catatan_revisi' => $request->catatan_revisi,
-        ]);
-
-        return redirect()->route('surat.show', $surat->id)
-            ->with('success', 'Surat ditolak owner. Pengguna telah diberitahu untuk merevisi');
-    }
-
-    /**
-     * Generate nomor surat otomatis
-     */
-    private function generateNomorSurat()
-    {
-        $count = Surat::whereYear('created_at', now()->year)->count() + 1;
-        $bulan = str_pad(now()->month, 2, '0', STR_PAD_LEFT);
-        $tahun = now()->year;
-        
-        return sprintf('SURAT/%d/%s/%03d', $tahun, $bulan, $count);
-    }
-
-    /**
-     * Download file PDF surat
-     */
+    // ── DOWNLOAD ────────────────────────────────────────────
     public function download(Surat $surat)
     {
         $this->authorize('download', $surat);
 
         if (!$surat->file_pdf) {
-            return redirect()->route('surat.show', $surat->id)
-                ->with('error', 'File PDF tidak tersedia');
+            flash()->error('File PDF tidak tersedia.');
+            return redirect()->route('surat.show', $surat->id);
         }
 
         $filePath = storage_path('app/public/' . $surat->file_pdf);
 
         if (!file_exists($filePath)) {
-            return redirect()->route('surat.show', $surat->id)
-                ->with('error', 'File PDF tidak ditemukan');
+            flash()->error('File PDF tidak ditemukan di server.');
+            return redirect()->route('surat.show', $surat->id);
         }
 
-        return response()->download($filePath, $surat->nomor_surat . '.pdf');
+        $filename = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $surat->nomor_surat) . '.pdf';
+
+        return response()->download($filePath, $filename);
+    }
+
+    // ── GENERATE NOMOR SURAT ────────────────────────────────
+    private function generateNomorSurat(): string
+    {
+        $count = Surat::whereYear('created_at', now()->year)->count() + 1;
+        return sprintf('SURAT/%d/%s/%03d', now()->year, now()->format('m'), $count);
     }
 }

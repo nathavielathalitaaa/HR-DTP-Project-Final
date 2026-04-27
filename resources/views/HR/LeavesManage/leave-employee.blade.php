@@ -131,6 +131,26 @@
     </div>
     <!-- End Page-content -->
 @section('script')
-    
 @endsection
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('alternativePagination')) {
+        new DataTable('#alternativePagination', {
+            pagingType: 'full_numbers',
+            columnDefs: [
+                { orderable: false, targets: [0, 8] }
+            ],
+            language: {
+                search: 'Cari:',
+                lengthMenu: 'Tampilkan _MENU_ data',
+                info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+                paginate: { first: 'Pertama', last: 'Terakhir', next: 'Selanjutnya', previous: 'Sebelumnya' },
+                emptyTable: 'Tidak ada data'
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

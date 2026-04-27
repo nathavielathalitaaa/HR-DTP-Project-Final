@@ -95,6 +95,60 @@ class PenggajianController extends Controller
         return view('HR.penggajian.show', compact('penggajian'));
     }
 
+    // update komponen tunjangan dan potongan (hanya di status draft)
+    public function updateKomponen(Request $request)
+    {
+        try {
+            // validasi input
+            $validated = $request->validate([
+                'penggajian_id'   => 'required|exists:penggajians,id',
+                'total_tunjangan' => 'nullable|numeric|min:0',
+                'total_potongan'  => 'nullable|numeric|min:0',
+                'catatan'         => 'nullable|string|max:500',
+            ], [
+                'penggajian_id.required'     => 'data penggajian tidak ditemukan',
+                'penggajian_id.exists'       => 'slip gaji tidak valid',
+                'total_tunjangan.numeric'    => 'tunjangan harus berupa angka',
+                'total_tunjangan.min'        => 'tunjangan tidak boleh negatif',
+                'total_potongan.numeric'     => 'potongan harus berupa angka',
+                'total_potongan.min'         => 'potongan tidak boleh negatif',
+                'catatan.max'                => 'catatan maksimal 500 karakter',
+            ]);
+
+            // ambil data penggajian
+            $penggajian = Penggajian::findOrFail($validated['penggajian_id']);
+
+            // cek status harus draft
+            if ($penggajian->status !== 'draft') {
+                flash()->error('slip gaji hanya bisa diubah jika status masih draft');
+                return redirect()->back();
+            }
+
+            // siapkan data untuk diupdate
+            $totalTunjangan = $validated['total_tunjangan'] ?? 0;
+            $totalPotongan = $validated['total_potongan'] ?? 0;
+
+            // hitung ulang gaji bersih
+            $gajiBersih = $penggajian->gaji_pokok + $totalTunjangan - $totalPotongan;
+
+            // update data
+            $penggajian->update([
+                'total_tunjangan' => $totalTunjangan,
+                'total_potongan'  => $totalPotongan,
+                'gaji_bersih'     => $gajiBersih,
+                'catatan'         => $validated['catatan'] ?? null,
+            ]);
+
+            flash()->success('komponen gaji berhasil diupdate, gaji bersih: Rp ' . number_format($gajiBersih, 0, ',', '.'));
+            return redirect()->back();
+
+        } catch (\Exception $e) {
+            \Log::error('Error in updateKomponen: ' . $e->getMessage());
+            flash()->error('gagal mengupdate komponen gaji');
+            return redirect()->back();
+        }
+    }
+
     // ubah status slip gaji menjadi dibayar
     public function bayar(Request $request)
     {

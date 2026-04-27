@@ -7,22 +7,30 @@ use Illuminate\Http\Request;
 
 class AbsensiController extends Controller
 {
-    // tampilkan daftar absensi berdasarkan bulan
     public function index(Request $request)
     {
-        // ambil bulan yang dipilih, default bulan ini
         $bulan = $request->bulan ?? date('Y-m');
-        
-        // ambil semua absensi di bulan tersebut beserta data usernya
-        $absensiList = Absensi::with('user')
-            ->where('tanggal', 'like', $bulan . '%')
-            ->orderBy('tanggal', 'desc')
-            ->get();
-        
-        return view('HR.absensi.index', compact('absensiList', 'bulan'));
+
+        $query = Absensi::select(['id', 'user_id', 'tanggal', 'jam_masuk', 'jam_keluar', 'status', 'keterangan'])
+            ->with(['user' => function ($q) {
+                $q->select(['id', 'name']);
+            }])
+            ->where('tanggal', 'like', $bulan . '%');
+
+        // jika user bukan hr, tampilkan hanya absensi miliknya sendiri
+        if (!auth()->user()->hasRole('hr')) {
+            $query->where('user_id', auth()->user()->id);
+        }
+
+        $absensiList = $query->orderBy('tanggal', 'desc')->get();
+
+        $absensiHariIni = Absensi::where('user_id', auth()->user()->id)
+            ->where('tanggal', date('Y-m-d'))
+            ->first();
+
+        return view('HR.absensi.index', compact('absensiList', 'bulan', 'absensiHariIni'));
     }
 
-    // simpan data absensi yang diinput hr
     public function store(Request $request)
     {
         $request->validate([
@@ -31,7 +39,6 @@ class AbsensiController extends Controller
             'jam_masuk' => 'nullable|date_format:H:i',
             'status'    => 'required|in:hadir,izin,sakit,alpha,cuti',
         ], [
-            // pesan validasi dalam bahasa indonesia
             'user_id.required'   => 'karyawan harus dipilih',
             'tanggal.required'   => 'tanggal harus diisi',
             'status.required'    => 'status kehadiran harus dipilih',
@@ -39,7 +46,6 @@ class AbsensiController extends Controller
         ]);
 
         try {
-            // cek apakah absensi tanggal ini sudah ada
             $sudahAda = Absensi::where('user_id', $request->user_id)
                 ->where('tanggal', $request->tanggal)
                 ->first();
@@ -49,7 +55,6 @@ class AbsensiController extends Controller
                 return redirect()->back();
             }
 
-            // simpan data absensi baru
             Absensi::create([
                 'user_id'    => $request->user_id,
                 'tanggal'    => $request->tanggal,
@@ -69,15 +74,13 @@ class AbsensiController extends Controller
         }
     }
 
-    // karyawan melakukan absen masuk
     public function clockIn(Request $request)
     {
         try {
-            $userId  = auth()->id();
+            $userId   = auth()->id();
             $hari_ini = date('Y-m-d');
             $jam_ini  = date('H:i:s');
 
-            // cek apakah sudah absen hari ini
             $sudahAbsen = Absensi::where('user_id', $userId)
                 ->where('tanggal', $hari_ini)
                 ->first();
@@ -87,7 +90,6 @@ class AbsensiController extends Controller
                 return redirect()->back();
             }
 
-            // buat record absensi baru
             Absensi::create([
                 'user_id'   => $userId,
                 'tanggal'   => $hari_ini,
@@ -105,15 +107,13 @@ class AbsensiController extends Controller
         }
     }
 
-    // karyawan melakukan absen keluar
     public function clockOut(Request $request)
     {
         try {
-            $userId  = auth()->id();
+            $userId   = auth()->id();
             $hari_ini = date('Y-m-d');
             $jam_ini  = date('H:i:s');
 
-            // cari record absensi hari ini
             $absensi = Absensi::where('user_id', $userId)
                 ->where('tanggal', $hari_ini)
                 ->first();
@@ -128,7 +128,6 @@ class AbsensiController extends Controller
                 return redirect()->back();
             }
 
-            // update jam keluar
             $absensi->update(['jam_keluar' => $jam_ini]);
 
             flash()->success('berhasil absen keluar pukul ' . $jam_ini);
