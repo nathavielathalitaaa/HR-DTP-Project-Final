@@ -3,10 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Absensi;
-use App\Models\Department;
 use App\Models\DocumentApproval;
-use App\Models\Leave;
-use App\Models\Penggajian;
 use App\Models\Surat;
 use App\Models\User;
 use Carbon\Carbon;
@@ -26,10 +23,11 @@ class HomeController extends Controller
         // data dasar — dikirim ke semua role
         $data = [
             'userRoleName'    => match(true) {
-                $user->hasRole('hr')         => 'HR',
-                $user->hasRole('supervisor') => 'Supervisor',
-                $user->hasRole('staff')      => 'Staff',
-                default                      => 'Karyawan'
+                $user->hasRole('hr')                 => 'HR',
+                $user->hasRole('supervisor')          => 'Supervisor',
+                $user->hasRole('staff')               => 'Staff',
+                $user->hasRole('head_of_department') => 'Head of Department',
+                default                               => 'Karyawan'
             },
             'userDisplayName' => 'Selamat datang kembali',
         ];
@@ -38,13 +36,9 @@ class HomeController extends Controller
         if ($user->hasRole('hr')) {
             $data = array_merge($data, [
                 'totalKaryawan'       => User::where('status', 'aktif')->count(),
-                'hadirHariIni'        => Absensi::where('tanggal', now()->format('Y-m-d'))->where('status', 'hadir')->count(),
-                'cutiMenungguCount'   => Leave::where('status', 'menunggu')->count(),
-                'totalDepartemen'     => Department::count(),
-                'totalGajiBayar'      => Penggajian::where('periode', now()->format('Y-m'))->where('status', 'dibayar')->sum('gaji_bersih'),
+                'hadirBulanIni'       => Absensi::where('tanggal', now()->format('Y-m-01'))->where('status', 'hadir')->count(),
                 'totalJamLembur'      => $this->getTotalJamLembur(),
                 'chartAbsensi'        => $this->getChartAbsensi(),
-                'cutiMenungguTerbaru' => Leave::where('status', 'menunggu')->orderBy('created_at', 'desc')->take(5)->get(),
                 'suratMenungguCount'  => DocumentApproval::where('status', 'waiting')->where('document_type', 'LIKE', 'surat_%')->count(),
                 'suratSelesaiHariIni' => Surat::where('status', 'approved_owner')->whereDate('updated_at', now()->format('Y-m-d'))->count(),
             ]);
@@ -55,14 +49,45 @@ class HomeController extends Controller
             $jabatan = $user->profile?->jabatan;
             $data = array_merge($data, [
                 'totalKaryawan'      => User::where('status', 'aktif')->count(),
-                'hadirHariIni'       => Absensi::where('tanggal', now()->format('Y-m-d'))->where('status', 'hadir')->count(),
-                'cutiMenungguCount'  => Leave::where('status', 'menunggu')->count(),
+                'hadirBulanIni'      => Absensi::where('tanggal', now()->format('Y-m-01'))->where('status', 'hadir')->count(),
                 'suratMenungguCount' => DocumentApproval::where('status', 'waiting')
-                                            ->where('jabatan', $jabatan)
+                                            ->where(function($q) use ($jabatan, $user) {
+                                                $q->where('jabatan', $jabatan)
+                                                  ->orWhere('assigned_user_id', $user->id);
+                                            })
                                             ->where('document_type', 'LIKE', 'surat_%')
                                             ->count(),
-                'suratMenungguList'  => Surat::whereHas('approvals', function($q) use ($jabatan) {
-                                                $q->where('jabatan', $jabatan)->where('status', 'waiting');
+                'suratMenungguList'  => Surat::whereHas('approvals', function($q) use ($jabatan, $user) {
+                                                $q->where(function($q2) use ($jabatan, $user) {
+                                                    $q2->where('jabatan', $jabatan)
+                                                       ->orWhere('assigned_user_id', $user->id);
+                                                })->where('status', 'waiting');
+                                            })
+                                            ->with('user')
+                                            ->orderBy('created_at', 'desc')
+                                            ->take(5)
+                                            ->get(),
+            ]);
+        }
+
+        // ── head_of_department: monitoring + approval ─────────
+        elseif ($user->hasRole('head_of_department')) {
+            $jabatan = $user->profile?->jabatan ?? 'hod';
+            $data = array_merge($data, [
+                'totalKaryawan'      => User::where('status', 'aktif')->count(),
+                'hadirBulanIni'      => Absensi::where('tanggal', now()->format('Y-m-01'))->where('status', 'hadir')->count(),
+                'suratMenungguCount' => DocumentApproval::where('status', 'waiting')
+                                            ->where(function($q) use ($jabatan, $user) {
+                                                $q->where('jabatan', $jabatan)
+                                                  ->orWhere('assigned_user_id', $user->id);
+                                            })
+                                            ->where('document_type', 'LIKE', 'surat_%')
+                                            ->count(),
+                'suratMenungguList'  => Surat::whereHas('approvals', function($q) use ($jabatan, $user) {
+                                                $q->where(function($q2) use ($jabatan, $user) {
+                                                    $q2->where('jabatan', $jabatan)
+                                                       ->orWhere('assigned_user_id', $user->id);
+                                                })->where('status', 'waiting');
                                             })
                                             ->with('user')
                                             ->orderBy('created_at', 'desc')

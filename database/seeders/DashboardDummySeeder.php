@@ -5,9 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Absensi;
-use App\Models\Leave;
 use App\Models\Penggajian;
-use App\Models\Department;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -37,17 +35,7 @@ class DashboardDummySeeder extends Seeder
 
         $this->command->info('admin@hris.test / password');
 
-        // ==================== 2. BUAT DEPARTEMEN ====================
         $departemenNames = ['operasional', 'keuangan', 'sdm', 'pemasaran', 'it'];
-        foreach ($departemenNames as $nama) {
-            Department::updateOrCreate(
-                ['department' => $nama],
-                [
-                    'head_of' => fake()->name(),
-                    'total_employee' => rand(8, 25)
-                ]
-            );
-        }
 
         // ==================== 3. BUAT 99 KARYAWAN DUMMY ====================
         $this->command->info('membuat data karyawan dummy...');
@@ -112,19 +100,6 @@ class DashboardDummySeeder extends Seeder
             ]);
         }
 
-        // ==================== 5. BUAT CUTI MENUNGGU ====================
-        for ($i = 0; $i < 12; $i++) {
-            Leave::create([
-                'staff_id'      => rand(1, 100),
-                'employee_name' => User::find(rand(1, 100))->name ?? 'karyawan dummy',
-                'leave_type'    => fake()->randomElement(['annual leave', 'sick leave', 'cuti khusus']),
-                'date_from'     => now()->addDays(rand(3, 15)),
-                'date_to'       => now()->addDays(rand(10, 25)),
-                'number_of_day' => rand(2, 8),
-                'reason'        => fake()->sentence(),
-                'status'        => 'menunggu',
-            ]);
-        }
 
         $this->command->info('seeder dashboard dummy selesai. total 100 karyawan + 1 super admin.');
     }

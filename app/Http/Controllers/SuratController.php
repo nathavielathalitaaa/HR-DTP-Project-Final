@@ -9,6 +9,7 @@ use App\Services\ApprovalCoverService;
 use App\Http\Requests\Surat\StoreSuratRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class SuratController extends Controller
 {
@@ -18,6 +19,7 @@ class SuratController extends Controller
         private ApprovalCoverService $coverService,
         private \App\Services\PdfStampService $stampService,
         private \App\Services\NotificationService $notifService,
+        private \App\Services\SuratNumberService $numberService,
     ) {
         $this->middleware('auth');
     }
@@ -26,22 +28,27 @@ class SuratController extends Controller
     /** tampilkan daftar surat */
     public function index()
     {
-        $user    = Auth::user()->load('profile');
-        $jabatan = $user->profile?->jabatan;
+        $user = Auth::user()->load('profile');
+        $query = Surat::with(['user', 'approvals', 'suratType']);
 
-        $query = Surat::with(['user', 'approvals']);
-
-        if ($jabatan) {
+        // Jika HR atau Admin, tampilkan semua surat
+        if ($user->hasAnyRole(['hr', 'admin', 'super-admin'])) {
+            // Tampilkan semua (tanpa filter query)
+        } else {
+            // Filter untuk user biasa (Hanya yang ia ajukan ATAU yang butuh approval dia)
+            $jabatan = $user->profile?->jabatan;
             $query->where(function($q) use ($jabatan, $user) {
-                $q->whereHas('approvals', function ($sq) use ($jabatan) {
-                    $sq->where('jabatan', $jabatan)
-                      ->whereIn('status', ['waiting', 'approved', 'rejected', 'pending'])
-                      ->where('document_type', 'LIKE', 'surat_%');
-                })
-                ->orWhere('user_id', $user->id);
+                // Milik sendiri
+                $q->where('user_id', $user->id);
+
+                // Atau yang melibatkan jabatannya dalam approval
+                if ($jabatan) {
+                    $q->orWhereHas('approvals', function ($sq) use ($jabatan) {
+                        $sq->where('jabatan', $jabatan)
+                          ->where('document_type', 'LIKE', 'surat_%');
+                    });
+                }
             });
-        } elseif ($user->hasRole('staff')) {
-            $query->where('user_id', $user->id);
         }
 
         $surats = $query->latest()->paginate(15);
@@ -63,6 +70,8 @@ class SuratController extends Controller
     {
         $this->authorize('store', Surat::class);
 
+        $suratType = \App\Models\SuratType::findOrFail($request->surat_type_id);
+
         $fileName = null;
         if ($request->hasFile('file_pdf')) {
             $fileName = $request->file('file_pdf')->store('surat', 'public');
@@ -70,16 +79,17 @@ class SuratController extends Controller
 
         $surat = Surat::create([
             'user_id'         => Auth::id(),
-            'nomor_surat'     => $this->generateNomorSurat(),
-            'jenis_surat'     => $request->validated()['jenis_surat'],
-            'perihal'         => $request->validated()['perihal'],
+            'surat_type_id'   => $suratType->id,
+            'nomor_surat'     => $this->numberService->generate($suratType),
+            'jenis_surat'     => $suratType->kode,
+            'perihal'         => $request->perihal,
             'file_pdf'        => $fileName,
             'ttd_coordinates' => $request->ttd_coordinates ? json_decode($request->ttd_coordinates, true) : null,
             'status'          => 'submitted',
         ]);
 
-        // init approval 4 step
-        $this->approval->initApproval('surat_' . $surat->jenis_surat, $surat->id);
+        // init approval from SuratType
+        $this->approval->initFromSuratType($surat);
 
         // notify first approver
         $firstStep = $surat->approvals()->where('status', 'waiting')->first();
@@ -218,8 +228,14 @@ class SuratController extends Controller
             // generate pdf cover approval / stamp
             try {
                 $documentType = 'surat_' . $surat->jenis_surat;
-                $step = \App\Models\ApprovalStep::where('document_type', $documentType)->first();
-                $ttdMode = $step?->ttd_mode ?? 'append';
+                
+                // Cari ttdMode: Cek di SuratType dulu, kalau tidak ada baru ApprovalStep
+                if ($surat->suratType) {
+                    $ttdMode = 'stamp';
+                } else {
+                    $step = \App\Models\ApprovalStep::where('document_type', $documentType)->first();
+                    $ttdMode = $step?->ttd_mode ?? 'append';
+                }
 
                 if ($ttdMode === 'stamp') {
                     $finalPath = $this->stampService->stamp($surat);
@@ -228,16 +244,19 @@ class SuratController extends Controller
                 } else {
                     $coverPath = $this->coverService->generateCover($surat);
                     $surat->update(['cover_pdf_path' => $coverPath]);
+                    $surat->refresh(); // ← TAMBAH INI agar $surat->cover_pdf_path ter-update di memory
                     \Log::info('Cover generated: ' . $coverPath);
                     
                     $finalPath = $this->coverService->processMerge($surat);
                     if ($finalPath) {
                         $surat->update(['final_pdf_path' => $finalPath]);
+                        $surat->refresh(); // ← refresh lagi agar hasFinalPdf() benar di view
                         \Log::info('Final PDF merged: ' . $finalPath);
                     }
                 }
             } catch (\Exception $e) {
                 \Log::error('Gagal generate cover/stamp/merge PDF: ' . $e->getMessage());
+                flash()->warning('Surat disetujui, namun PDF dengan tanda tangan gagal digabungkan: ' . $e->getMessage());
             }
         } else {
             // notify next approver
@@ -311,19 +330,28 @@ class SuratController extends Controller
     {
         $this->authorize('download', $surat);
 
-        if (!$surat->file_pdf) {
+        // Pilih path: Prioritaskan final stamped PDF, lalu cover, baru file asli
+        $relativePath = $surat->final_pdf_path ?? $surat->cover_pdf_path ?? $surat->file_pdf;
+
+        if (!$relativePath) {
             flash()->error('File PDF tidak tersedia.');
             return redirect()->route('surat.show', $surat->id);
         }
 
-        $filePath = storage_path('app/public/' . $surat->file_pdf);
+        // Tentukan full path di storage public
+        $filePath = storage_path('app/public/' . $relativePath);
 
         if (!file_exists($filePath)) {
             flash()->error('File PDF tidak ditemukan di server.');
             return redirect()->route('surat.show', $surat->id);
         }
 
-        $filename = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $surat->nomor_surat) . '.pdf';
+        $filename = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $surat->nomor_surat);
+        if ($surat->hasFinalPdf()) {
+            $filename .= '_SIGNED.pdf';
+        } else {
+            $filename .= '.pdf';
+        }
 
         return response()->download($filePath, $filename);
     }
@@ -356,15 +384,37 @@ class SuratController extends Controller
     // ── get ttd mode ───────────────────────────────────────
     public function getTtdMode(Request $request)
     {
-        $jenisSurat = $request->jenis_surat;
-        $step = \App\Models\ApprovalStep::where('document_type', 'surat_' . $jenisSurat)->first();
-        $approvers = \App\Models\ApprovalStep::where('document_type', 'surat_' . $jenisSurat)
+        $jenis = $request->jenis_surat;
+        
+        // 1. Cek di SuratType dulu (fitur baru)
+        $suratType = \App\Models\SuratType::where('kode', $jenis)->first();
+        if ($suratType) {
+            $approvers = $suratType->approvers->map(function($a) {
+                return [
+                    'jabatan' => $a->jabatan_label,
+                    'label'   => $a->label,
+                ];
+            })->toArray();
+
+            return response()->json([
+                'mode' => 'stamp', // Jenis surat baru default ke stamp agar bisa positioning TTD
+                'approvers' => $approvers
+            ]);
+        }
+
+        // 2. Fallback ke ApprovalStep (logika lama)
+        $step = \App\Models\ApprovalStep::where('document_type', 'surat_' . $jenis)
+            ->orWhere('document_type', $jenis)
+            ->first();
+
+        $approvers = \App\Models\ApprovalStep::where('document_type', 'surat_' . $jenis)
+            ->orWhere('document_type', $jenis)
             ->orderBy('step_order')
             ->get()
             ->map(function($s) {
                 return [
                     'jabatan' => $s->jabatan,
-                    'label' => $s->label
+                    'label'   => $s->label,
                 ];
             })
             ->toArray();
@@ -372,6 +422,39 @@ class SuratController extends Controller
         return response()->json([
             'mode' => $step?->ttd_mode ?? 'append',
             'approvers' => $approvers
+        ]);
+    }
+
+    public function getTtdPreview(string $jabatan)
+    {
+        $profile = \App\Models\EmployeeProfile::where('jabatan', $jabatan)
+            ->whereNotNull('ttd_path')
+            ->first();
+
+        if (!$profile) {
+            return response('', 204);
+        }
+
+        $paths = [
+            storage_path('app/private/private/' . $profile->ttd_path),
+            storage_path('app/private/' . $profile->ttd_path),
+        ];
+
+        $path = null;
+        foreach ($paths as $p) {
+            if (file_exists($p)) {
+                $path = $p;
+                break;
+            }
+        }
+
+        if (!$path) {
+            return response('', 204);
+        }
+
+        return response()->file($path, [
+            'Content-Type'  => mime_content_type($path),
+            'Cache-Control' => 'private, max-age=300',
         ]);
     }
 

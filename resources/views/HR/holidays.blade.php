@@ -1,72 +1,68 @@
 @extends('layouts.master')
 @section('content')
     
-    <div class="group-data-[sidebar-size=lg]:ltr:md:ml-vertical-menu group-data-[sidebar-size=lg]:rtl:md:mr-vertical-menu group-data-[sidebar-size=md]:ltr:ml-vertical-menu-md group-data-[sidebar-size=md]:rtl:mr-vertical-menu-md group-data-[sidebar-size=sm]:ltr:ml-vertical-menu-sm group-data-[sidebar-size=sm]:rtl:mr-vertical-menu-sm pt-[calc(theme('spacing.header')_*_1)] pb-[calc(theme('spacing.header')_*_0.8)] px-4 group-data-[navbar=bordered]:pt-[calc(theme('spacing.header')_*_1.3)] group-data-[navbar=hidden]:pt-0 group-data-[layout=horizontal]:mx-auto group-data-[layout=horizontal]:max-w-screen-2xl group-data-[layout=horizontal]:px-0 group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:ltr:md:ml-auto group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:rtl:md:mr-auto group-data-[layout=horizontal]:md:pt-[calc(theme('spacing.header')_*_1.6)] group-data-[layout=horizontal]:px-3 group-data-[layout=horizontal]:group-data-[navbar=hidden]:pt-[calc(theme('spacing.header')_*_0.9)]">
-        <div class="container-fluid group-data-[content=boxed]:max-w-boxed mx-auto">
-            <div class="flex flex-col gap-2 py-4 md:flex-row md:items-center print:hidden">
-                <div class="grow">
-                    <h5 class="text-16">Holidays List</h5>
-                    <p class="text-sm text-slate-500 dark:text-zink-200 mt-1">Kelola hari libur nasional dan hari pengganti kerja</p>
-                </div>
-                <ul class="flex items-center gap-2 text-sm font-normal shrink-0">
-                    <li class="relative before:content-['\ea54'] before:font-remix ltr:before:-right-1 rtl:before:-left-1  before:absolute before:text-[18px] before:-top-[3px] ltr:pr-4 rtl:pl-4 before:text-slate-400 dark:text-zink-200">
-                        <a href="#!" class="text-slate-400 dark:text-zink-200">HR Management</a>
-                    </li>
-                    <li class="text-slate-700 dark:text-zink-100">
-                        Holidays List
-                    </li>
-                </ul>
-            </div>
-            <div class="card">
-                <div class="card-body">
-                    <div class="flex items-center">
-                        <h6 class="text-15 grow">Holidays {{ date('Y') }}</h6>
-                        <div class="shrink-0">
-                            <button data-modal-target="addHolidayModal" type="button" class="text-white btn bg-custom-500 border-custom-500 hover:text-white hover:bg-custom-600 hover:border-custom-600 focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:text-white active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100 dark:ring-custom-400/20">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" class="lucide lucide-plus inline-block size-4"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg> 
-                                <span class="align-middle">Add Holiday</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                    <table id="alternativePagination" class="display" style="width:100%">
-                        <thead>
-                            <tr>
-                                <th hidden>No</th>
-                                <th class="px-3.5 py-2.5 font-semibold border border-slate-200 dark:border-zink-500">No</th>
-                                <th class="px-3.5 py-2.5 font-semibold border border-slate-200 dark:border-zink-500">Day</th>
-                                <th class="px-3.5 py-2.5 font-semibold border border-slate-200 dark:border-zink-500">Date</th>
-                                <th hidden>Date</th>
-                                <th class="px-3.5 py-2.5 font-semibold border border-slate-200 dark:border-zink-500">Holiday Name</th>
-                                <th class="px-3.5 py-2.5 font-semibold border border-slate-200 dark:border-zink-500">Type</th>
-                                <th class="px-3.5 py-2.5 font-semibold border border-slate-200 dark:border-zink-500">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($holidayList as $key => $value)
-                                <tr>
-                                    <td id="idUpdate" hidden>{{ $value->id }}</td>
-                                    <td class="px-3.5 py-2.5 border border-slate-200 dark:border-zink-500">{{ ++ $key }}</td>
-                                    <td class="px-3.5 py-2.5 border border-slate-200 dark:border-zink-500">{{ Carbon\Carbon::parse($value->holiday_date)->format('l') }}</td>
-                                    <td id="holiday_date" hidden class="px-3.5 py-2.5 border border-slate-200 dark:border-zink-500">{{ $value->holiday_date }}</td>
-                                    <td class="px-3.5 py-2.5 border border-slate-200 dark:border-zink-500">{{ Carbon\Carbon::parse($value->holiday_date)->format('d M') }}</td>
-                                    <td id="holiday_name" class="px-3.5 py-2.5 border border-slate-200 dark:border-zink-500">{{ $value->holiday_name }}</td>
-                                    <td id="holiday_type" class="px-3.5 py-2.5 border border-slate-200 dark:border-zink-500">{{ $value->holiday_type }}</td>
-                                    <td class="px-3.5 py-2.5 border border-slate-200 dark:border-zink-500">
-                                        <div class="flex gap-2 justify-center">
-                                            <a href="#!" data-modal-target="editHolidayModal" id="updateHoliday" class="flex items-center justify-center transition-all duration-200 ease-linear rounded-md size-8 bg-slate-100 text-slate-500 hover:text-custom-500 hover:bg-custom-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:bg-custom-500/20 dark:hover:text-custom-500"><i data-lucide="pencil" class="size-4"></i></a>
-                                            <a href="#!" data-modal-target="deleteModal" id="deleteHoliday" class="flex items-center justify-center transition-all duration-200 ease-linear rounded-md size-8 bg-slate-100 text-slate-500 hover:text-red-500 hover:bg-red-100 dark:bg-zink-600 dark:text-zink-200 dark:hover:text-red-500 dark:hover:bg-red-500/20"><i data-lucide="trash-2" class="size-4"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
+    {{-- header --}}
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-playfair font-bold text-[#1A2B24]">Holidays List</h1>
+            <p class="text-sm text-gray-500 mt-1">Manage national holidays and compensatory leaves</p>
+        </div>
+        <button data-modal-target="addHolidayModal" type="button"
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4F6560] hover:bg-[#3d504c] text-white rounded-xl text-sm font-bold shadow transition">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add Holiday
+        </button>
+    </div>
+
+    {{-- table card --}}
+    <div class="bg-white/80 backdrop-blur-md rounded-[24px] shadow-sm border border-white/40 p-6">
+        <div class="overflow-x-auto">
+            <table id="alternativePagination" class="display w-full text-sm">
+            <thead>
+                <tr class="text-left text-[#4F6560] border-b border-gray-100">
+                    <th hidden>No</th>
+                    <th class="px-4 py-3 font-semibold">No</th>
+                    <th class="px-4 py-3 font-semibold">Day</th>
+                    <th class="px-4 py-3 font-semibold">Date</th>
+                    <th hidden>Date</th>
+                    <th class="px-4 py-3 font-semibold">Holiday Name</th>
+                    <th class="px-4 py-3 font-semibold">Type</th>
+                    <th class="px-4 py-3 font-semibold text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($holidayList as $key => $value)
+                    <tr class="border-b border-gray-50 hover:bg-[#80BB9B]/5 transition">
+                        <td id="idUpdate" hidden>{{ $value->id }}</td>
+                        <td class="px-4 py-3 text-gray-600">{{ ++ $key }}</td>
+                        <td class="px-4 py-3 text-gray-600">{{ Carbon\Carbon::parse($value->holiday_date)->format('l') }}</td>
+                        <td id="holiday_date" hidden class="px-4 py-3 text-gray-600">{{ $value->holiday_date }}</td>
+                        <td class="px-4 py-3 font-medium text-[#1A2B24]">{{ Carbon\Carbon::parse($value->holiday_date)->format('d M Y') }}</td>
+                        <td id="holiday_name" class="px-4 py-3 text-gray-800 font-medium">{{ $value->holiday_name }}</td>
+                        <td id="holiday_type" class="px-4 py-3">
+                            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider
+                                {{ $value->holiday_type === 'Gazetted Holiday' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' }}">
+                                {{ $value->holiday_type }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex gap-2 justify-center">
+                                <a href="#!" data-modal-target="editHolidayModal" id="updateHoliday"
+                                   class="p-2 rounded-lg bg-[#80BB9B]/20 text-[#4F6560] hover:bg-[#80BB9B]/40 transition">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </a>
+                                <a href="#!" data-modal-target="deleteModal" id="deleteHoliday"
+                                   class="p-2 rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
         </div>
     </div>
+
 
     <div id="addHolidayModal" modal-center="" class="fixed flex flex-col hidden transition-all duration-300 ease-in-out left-2/4 z-drawer -translate-x-2/4 -translate-y-2/4 show ">
         <div class="w-screen md:w-[30rem] bg-white shadow rounded-md dark:bg-zink-600">
@@ -231,11 +227,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 { orderable: false, targets: [0, 7] }
             ],
             language: {
-                search: 'Cari:',
-                lengthMenu: 'Tampilkan _MENU_ data',
-                info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
-                paginate: { first: 'Pertama', last: 'Terakhir', next: 'Selanjutnya', previous: 'Sebelumnya' },
-                emptyTable: 'Tidak ada data'
+                search: 'Search:',
+                lengthMenu: 'Show _MENU_ entries',
+                info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+                paginate: { first: 'First', last: 'Last', next: 'Next', previous: 'Previous' },
+                emptyTable: 'No data available'
             }
         });
     }

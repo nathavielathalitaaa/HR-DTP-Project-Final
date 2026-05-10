@@ -261,7 +261,7 @@
         <div class="left-content">
             <img src="{{ URL::to('assets\images\Logo Sinergi putih.png') }}">
             <h2>HR Sinergi</h2>
-            <p>Kelola dokumen dengan aman dan efisien</p>
+            <p>Manage documents safely and efficiently</p>
         </div>
     </div>
 
@@ -269,14 +269,14 @@
     <div class="right">
         <div class="card">
 
-            <h1 class="title">Selamat Datang, {{ $user->name }}</h1>
-            <p class="subtitle">Lengkapi profil Anda</p>
+            <h1 class="title">Welcome, {{ $user->name }}</h1>
+            <p class="subtitle">Complete your profile</p>
 
             <!-- progress -->
             <div class="steps">
                 <div class="step {{ $step === 'ttd' ? 'active' : ($profile->ttd_path ? 'done' : '') }}">
                     <div class="circle">1</div>
-                    <small>TTD</small>
+                    <small>Signature</small>
                 </div>
                 <div class="step {{ $step === 'pin' ? 'active' : ($profile->pin ? 'done' : '') }}">
                     <div class="circle">2</div>
@@ -291,10 +291,10 @@
                     @csrf
 
                     <div class="form-group">
-                        <label class="label">Upload TTD</label>
+                        <label class="label">Upload Signature</label>
 
                         <div class="upload" onclick="document.getElementById('ttd').click()">
-                            Klik untuk upload PNG
+                            Click to upload PNG
                             <input type="file" id="ttd" name="ttd" accept=".png" @change="
                                 const file = $el.files[0];
                                 if (!file) return;
@@ -316,10 +316,10 @@
                     </div>
 
                     <div class="info">
-                        TTD digunakan untuk dokumen resmi
+                        Signature is used for official documents
                     </div>
 
-                    <button class="btn" type="submit" :disabled="loading" x-text="loading ? 'Menyimpan...' : 'Simpan Tanda Tangan →'"></button>
+                    <button class="btn" type="submit" :disabled="loading" x-text="loading ? 'Saving...' : 'Save Signature →'"></button>
                 </form>
             </div>
             @endif
@@ -328,16 +328,16 @@
             @if($step === 'pin')
             <div x-data="{ loading: false }">
                 <div class="ttd-preview-box">
-                    <div class="ttd-preview-label">Tanda Tangan Tersimpan</div>
-                    <img src="{{ route('profile.ttd.preview') }}" alt="Tanda Tangan" style="max-height:120px; object-fit:contain;">
-                    <div class="ttd-check">✓ Tanda tangan tersimpan dengan baik</div>
+                    <div class="ttd-preview-label">Saved Signature</div>
+                    <img src="{{ route('profile.ttd.preview') }}" alt="Signature" style="max-height:120px; object-fit:contain;">
+                    <div class="ttd-check">✓ Signature saved successfully</div>
                 </div>
 
                 <form method="POST" action="{{ route('onboarding.pin') }}" @submit="loading = true">
                     @csrf
 
                     <div class="form-group">
-                        <label class="label">PIN (6 digit)</label>
+                        <label class="label">PIN (6 digits)</label>
                         <input type="password" name="pin" class="input" maxlength="6" required>
                         @error('pin')
                             <div class="error">{{ $message }}</div>
@@ -345,7 +345,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="label">Konfirmasi PIN</label>
+                        <label class="label">Confirm PIN</label>
                         <input type="password" name="pin_confirmation" class="input" maxlength="6" required>
                         @error('pin_confirmation')
                             <div class="error">{{ $message }}</div>
@@ -353,10 +353,10 @@
                     </div>
 
                     <div class="info">
-                        PIN digunakan untuk approval dokumen. Jangan bagikan PIN Anda.
+                        PIN is used for document approval. Do not share your PIN.
                     </div>
 
-                    <button class="btn" type="submit" :disabled="loading" x-text="loading ? 'Memproses...' : 'Selesai & Masuk Sistem →'"></button>
+                    <button class="btn" type="submit" :disabled="loading" x-text="loading ? 'Processing...' : 'Complete & Enter System →'"></button>
                 </form>
             </div>
             @endif

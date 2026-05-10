@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\ShiftController;
-use App\Http\Controllers\PenggajianController;
 use App\Http\Controllers\SuratController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AccountController;
@@ -14,10 +13,9 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 
-// ── Root redirect ke login ─────────────────────────────
-Route::get('/', function () {
-    return view('auth.login');
-});
+// ── Root redirect ─────────────────────────────────────
+Route::get('/', fn() => redirect('/home'));
+Route::get('/dashboard', fn() => redirect('/home'))->middleware('auth');
 
 // ══════════════════════════════════════════════
 // AUTH
@@ -74,6 +72,14 @@ Route::middleware('auth')->group(function () {
         Route::post('profile/pin', [AccountController::class, 'setPin'])->name('profile.pin');
         Route::get('profile/ttd/preview', [AccountController::class, 'showTtd'])->name('profile.ttd.preview');
 
+        Route::get('/ttd-preview/{userId}', function($userId) {
+            $profile = \App\Models\EmployeeProfile::where('user_id', $userId)->firstOrFail();
+            if (!$profile->ttd_path) abort(404);
+            $path = storage_path('app/private/' . $profile->ttd_path);
+            if (!file_exists($path)) abort(404);
+            return response()->file($path, ['Content-Type' => 'image/png']);
+        })->name('ttd.preview.user')->middleware('auth');
+
         // ── Digital Signature (New Public Storage approach) ──
         Route::post('profile/signature/{id?}', [AccountController::class, 'uploadSignature'])->name('profile.signature.upload');
         Route::delete('profile/signature/{id?}', [AccountController::class, 'deleteSignature'])->name('profile.signature.delete');
@@ -103,43 +109,34 @@ Route::middleware('auth')->group(function () {
             Route::post('holidays/save', 'holidaySaveRecord')->name('hr/holidays/save');
             Route::post('holidays/delete', 'holidayDeleteRecord')->name('hr/holidays/delete');
 
-            // Cuti Karyawan
-            Route::get('leave/employee/page', 'leaveEmployee')->name('hr/leave/employee/page');
-            Route::get('create/leave/employee/page', 'createLeaveEmployee')->name('hr/create/leave/employee/page');
-            Route::post('create/leave/employee/save', 'saveRecordLeave')->name('hr/create/leave/employee/save');
-            Route::get('view/detail/leave/employee/{staff_id}', 'viewDetailLeave');
-
-            // Cuti HR
-            Route::get('leave/hr/page', 'leaveHR')->name('hr/leave/hr/page');
-            Route::post('leave/approve', 'approveLeave')->name('hr/leave/approve');
-            Route::post('leave/reject', 'rejectLeave')->name('hr/leave/reject');
-            Route::get('create/leave/hr/page', 'createLeaveHR')->name('hr/create/leave/hr/page');
-            Route::post('get/information/leave', 'getInformationLeave')->name('hr/get/information/leave');
 
             // Attendance
             Route::get('attendance/page', 'attendance')->name('hr/attendance/page');
             Route::get('attendance/main/page', 'attendanceMain')->name('hr/attendance/main/page');
 
-            // Departemen
-            Route::get('department/page', 'department')->name('hr/department/page');
-            Route::post('department/save', 'saveRecordDepartment')->name('hr/department/save');
-            Route::post('department/delete', 'deleteRecordDepartment')->name('hr/department/delete');
         });
 
         // ── Absensi ──────────────────────────────────────
         Route::controller(AbsensiController::class)->group(function () {
             Route::get('absensi/page', 'index')->name('hr/absensi/page');
-            Route::post('absensi/store', 'store')->name('hr/absensi/store');
-            Route::post('absensi/clock-in', 'clockIn')->name('hr/absensi/clock-in');
-            Route::post('absensi/clock-out', 'clockOut')->name('hr/absensi/clock-out');
             Route::get('absensi/export/excel', 'exportExcel')->name('hr/absensi/export/excel');
             Route::get('absensi/export/pdf', 'exportPdf')->name('hr/absensi/export/pdf');
+            Route::delete('absensi/{id}', 'destroy')->name('hr/absensi/delete');
         });
 
         // ── Import Absensi ────────────────────────────────
         Route::controller(\App\Http\Controllers\AbsensiImportController::class)->group(function () {
             Route::get('absensi/import', 'showImport')->name('hr/absensi/import');
             Route::post('absensi/import', 'import')->name('hr/absensi/import/store');
+            Route::post('absensi/import/map', 'mapFingerprint')->name('hr/absensi/import/map');
+        });
+
+        // ── AI Absensi ────────────────────────────────────
+        Route::controller(\App\Http\Controllers\AbsensiAiController::class)->group(function () {
+            Route::get('absensi/ai', 'showUpload')->name('hr/absensi/ai');
+            Route::post('absensi/ai/analyze', 'analyze')->name('hr/absensi/ai/analyze');
+            Route::get('absensi/ai/preview', 'preview')->name('hr/absensi/ai/preview');
+            Route::post('absensi/ai/save', 'save')->name('hr/absensi/ai/save');
         });
 
         // ── Shift ─────────────────────────────────────────
@@ -151,19 +148,6 @@ Route::middleware('auth')->group(function () {
             Route::post('shift/jadwal/store', 'simpanJadwal')->name('hr/shift/jadwal/store');
         });
 
-        // ══════════════════════════════════════════════
-        // APPROVAL FLOW
-        // ══════════════════════════════════════════════
-        Route::controller(\App\Http\Controllers\ApprovalFlowController::class)
-            ->prefix('approval-flow')
-            ->middleware('role:hr')
-            ->group(function () {
-                Route::get('/',               'index')->name('hr.approval-flow.index');
-                Route::get('/{type}/edit',    'edit')->name('hr.approval-flow.edit');
-                Route::post('/{type}',        'update')->name('hr.approval-flow.update');
-                Route::get('/reassign/index', 'reassignIndex')->name('hr.approval-flow.reassign');
-                Route::post('/reassign/apply', 'reassignApply')->name('hr.approval-flow.reassign.apply');
-            });
 
         // ══════════════════════════════════════════════
         // SETTINGS DOKUMEN
@@ -176,15 +160,6 @@ Route::middleware('auth')->group(function () {
                 Route::post('document', 'update')->name('hr.settings.document.update');
                 Route::post('document/logo', 'uploadLogo')->name('hr.settings.document.logo');
             });
-
-        // ── Penggajian ────────────────────────────────────
-        Route::controller(PenggajianController::class)->group(function () {
-            Route::get('penggajian/page', 'index')->name('hr/penggajian/page');
-            Route::post('penggajian/generate', 'generate')->name('hr/penggajian/generate');
-            Route::get('penggajian/show/{id}', 'show')->name('hr/penggajian/show');
-            Route::post('penggajian/update-komponen', 'updateKomponen')->name('hr/penggajian/update-komponen');
-            Route::post('penggajian/bayar', 'bayar')->name('hr/penggajian/bayar');
-        });
 
     }); // end prefix hr
 
@@ -200,6 +175,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/', 'store')->name('store');
 
             Route::get('ttd-mode', 'getTtdMode')->name('ttd-mode');
+            Route::get('ttd-preview/{jabatan}', 'getTtdPreview')->name('ttd-preview');
             Route::get('{surat}', 'show')->name('show');
             Route::get('{surat}/edit', 'edit')->name('edit');
             Route::put('{surat}', 'update')->name('update');
@@ -211,6 +187,47 @@ Route::middleware('auth')->group(function () {
                 Route::post('{surat}/approve', 'approve')->name('approve');
                 Route::post('{surat}/reject', 'reject')->name('reject');
             });
+
+            // Route sementara untuk regenerate cover PDF / Stamp
+            Route::get('{id}/regenerate-final', function($id) {
+                $surat = \App\Models\Surat::findOrFail($id);
+                $coverService = app(\App\Services\ApprovalCoverService::class);
+                $stampService = app(\App\Services\PdfStampService::class);
+                try {
+                    $documentType = 'surat_' . $surat->jenis_surat;
+                    $step = \App\Models\ApprovalStep::where('document_type', $documentType)->first();
+                    $ttdMode = $step?->ttd_mode ?? 'append';
+
+                    if ($ttdMode === 'stamp') {
+                        $path = $stampService->stamp($surat);
+                        $surat->update(['final_pdf_path' => $path]);
+                    } else {
+                        $path = $coverService->generateCover($surat);
+                        $surat->update(['cover_pdf_path' => $path]);
+                        $finalPath = $coverService->processMerge($surat);
+                        if ($finalPath) {
+                            $surat->update(['final_pdf_path' => $finalPath]);
+                            $path = $finalPath;
+                        }
+                    }
+                    return response()->json(['success' => true, 'path' => $path]);
+                } catch (\Exception $e) {
+                    return response()->json(['error' => $e->getMessage()], 500);
+                }
+            })->name('regenerate-final');
+        });
+
+        // ══════════════════════════════════════════════
+        // SURAT TYPE MANAGEMENT (role: hr)
+        // ══════════════════════════════════════════════
+        Route::middleware('role:hr')->prefix('surat-type')->name('surat-type.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\SuratTypeController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\SuratTypeController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\SuratTypeController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [\App\Http\Controllers\SuratTypeController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [\App\Http\Controllers\SuratTypeController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Http\Controllers\SuratTypeController::class, 'destroy'])->name('destroy');
+            Route::patch('/{id}/toggle', [\App\Http\Controllers\SuratTypeController::class, 'toggle'])->name('toggle');
         });
 
     }); // end middleware('onboarding')

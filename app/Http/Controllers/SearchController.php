@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Department;
 use Illuminate\Http\Request;
 
 class SearchController extends Controller
@@ -28,11 +27,7 @@ class SearchController extends Controller
             ->limit(6)
             ->get();
 
-        // cari departemen yang namanya mengandung kata kunci
-        $departemen = Department::where('department', 'like', '%' . $kata . '%')
-            ->select('id', 'department', 'head_of')
-            ->limit(3)
-            ->get();
+
 
         // format hasil untuk dikirim ke frontend
         $hasil = [];
@@ -48,15 +43,7 @@ class SearchController extends Controller
             ];
         }
 
-        foreach ($departemen as $d) {
-            $hasil[] = [
-                'tipe'  => 'departemen',
-                'label' => $d->department,
-                'sub'   => 'kepala: ' . ($d->head_of ?? '-'),
-                'id'    => $d->id,
-                'url'   => route('hr/department/page'),
-            ];
-        }
+
 
         return response()->json($hasil);
     }

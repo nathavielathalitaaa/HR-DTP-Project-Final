@@ -9,10 +9,9 @@ use Validator;
 use App\Models\User;
 use App\Models\Leave;
 use App\Models\Holiday;
-use App\Models\Department;
 use App\Models\Absensi;
 use Illuminate\Http\Request;
-use App\Models\LeaveInformation;
+
 use Carbon\Carbon;
 
 class HRController extends Controller
@@ -31,10 +30,9 @@ class HRController extends Controller
         // retrieve necessary data for the view
         $roleName = DB::table('role_type_users')->get();
         $position = DB::table('position_types')->get();
-        $department = DB::table('departments')->get();
         $statusUser = DB::table('user_types')->get();
 
-        return view('hr.employee', compact('employeeList', 'employeeId', 'roleName', 'position', 'department', 'statusUser'));
+        return view('hr.employee', compact('employeeList', 'employeeId', 'roleName', 'position', 'statusUser'));
     }
 
     /** save record employee */
@@ -283,148 +281,8 @@ class HRController extends Controller
         }
     }
 
-    /** get information leave */
-    public function getInformationLeave(Request $request)
-    {
-        try {
 
-            $numberOfDay = $request->number_of_day;
-            $leaveType   = $request->leave_type;
-            
-            $leaveDay = LeaveInformation::where('leave_type', $leaveType)->first();
-            
-            if ($leaveDay) {
-                $days = $leaveDay->leave_days - ($numberOfDay ?? 0);
-            } else {
-                $days = 0; // handle case if leave type doesn't exist
-            }
-            
-            $data = [
-                'response_code' => 200,
-                'status'        => 'success',
-                'message'       => 'Get success',
-                'leave_type'    => $days,
-                'number_of_day' => $numberOfDay,
-            ];
-            
-            return response()->json($data);
 
-        } catch (\Exception $e) {
-            // log the exception and return an appropriate response
-            \Log::error($e->getMessage());
-            return response()->json(['error' => 'An error occurred.'], 500);
-        }
-    }
-
-    /** leave employee */
-    public function leaveEmployee()
-    {
-        return $this->myLeave();
-    }
-
-    /** my leave - for staff */
-    public function myLeave()
-    {
-        $leave = Leave::where('staff_id', auth()->id())->latest()->get();
-        return view('hr.leaves-manage.leave-employee', compact('leave'));
-    }
-
-    /** create leave employee */
-    public function createLeaveEmployee()
-    {
-        $leaveInformation = LeaveInformation::all();
-        return view('hr.leaves-manage.create-leave-employee',compact('leaveInformation'));
-    }
-
-    /** save record leave */
-    public function saveRecordLeave(Request $request)
-    {
-        $request->validate([
-            'leave_type' => 'required|string',
-            'date_from'  => 'required',
-            'date_to'    => 'required',
-            'reason'     => 'required',
-        ]);
-
-        try {
-           
-            $save  = new Leave;
-            $save->staff_id         = Session::get('user_id');
-            $save->employee_name    = Session::get('name');
-            $save->leave_type       = $request->leave_type;
-            $save->remaining_leave  = $request->remaining_leave;
-            $save->date_from        = $request->date_from;
-            $save->date_to          = $request->date_to;
-            $save->number_of_day    = $request->number_of_day;
-            $save->leave_date       = json_encode($request->leave_date);
-            $save->leave_day        = json_encode($request->select_leave_day);
-            $save->status           = 'menunggu';
-            $save->reason           = $request->reason;
-            $save->save();
-    
-            flash()->success('Pengajuan cuti berhasil dikirim.');
-            return redirect()->back();
-        } catch (\Exception $e) {
-            \Log::error($e); // log the error
-            flash()->error('Gagal mengirim pengajuan cuti.');
-            return redirect()->back();
-        }
-    }
-
-    /** view detail leave employee */
-    public function viewDetailLeave($staff_id)
-    {
-        $leaveInformation = LeaveInformation::all();
-        $leaveDetail = Leave::where('staff_id', $staff_id)->first();
-        $leaveDate   = json_decode($leaveDetail->leave_date, true); // decode json to array
-        $leaveDay    = json_decode($leaveDetail->leave_day, true); // decode json to array
-
-        return view('hr.leaves-manage.view-detail-leave',compact('leaveInformation','leaveDetail','leaveDate','leaveDay'));
-    }
-
-    /** leave hr */
-    // tampilkan semua pengajuan cuti untuk ditinjau hr
-    public function leaveHR()
-    {
-        // ambil semua pengajuan cuti beserta data karyawannya
-        $leaveList = Leave::with('user')->orderBy('created_at', 'desc')->get();
-        return view('hr.leaves-manage.leave-hr', compact('leaveList'));
-    }
-
-    // hr menyetujui pengajuan cuti
-    public function approveLeave(Request $request)
-    {
-        try {
-            $leave = Leave::findOrFail($request->id);
-            $leave->update([
-                'status'      => 'Approved',
-                'approved_by' => auth()->user()->name,
-            ]);
-
-            flash()->success('pengajuan cuti berhasil disetujui');
-            return redirect()->back();
-        } catch (\Exception $e) {
-            \Log::error($e);
-            flash()->error('gagal menyetujui pengajuan cuti');
-            return redirect()->back();
-        }
-    }
-
-    // hr menolak pengajuan cuti
-    public function rejectLeave(Request $request)
-    {
-        try {
-            $leave = Leave::findOrFail($request->id);
-            $leave->update(['status' => 'Rejected']);
-
-            flash()->success('pengajuan cuti berhasil ditolak');
-            return redirect()->back();
-        } catch (\Exception $e) {
-            \Log::error($e);
-            flash()->error('gagal menolak pengajuan cuti');
-            return redirect()->back();
-        }
-    }
 
     /** attendance — redirect ke halaman absensi real */
     public function attendance()
@@ -435,13 +293,6 @@ class HRController extends Controller
     }
 
 
-    /** create leave hr */
-    public function createLeaveHR()
-    {
-        $users = User::all();
-        $leaveInformation = LeaveInformation::all();
-        return view('hr.leaves-manage.create-leave-hr',compact('users','leaveInformation'));
-    }
 
     /** attendance main */
     public function attendanceMain()
@@ -492,62 +343,6 @@ class HRController extends Controller
         }
     }
 
-    /** department */
-    public function department()
-    {
-        $departmentList = Department::all();
-        return view('hr.department',compact('departmentList'));
-    }
-
-    /** save record department */
-    public function saveRecordDepartment(Request $request)
-    {
-        $request->validate([
-            'department'      => 'required|string',
-            'head_of'         => 'required|string',
-            'phone_number'    => 'required|integer',
-            'email'           => 'required|email',
-            'total_employee'  => 'required|integer',
-        ]);
-    
-        try {
-            // use updateorcreate to handle both creation and update
-            $department = Department::updateOrCreate(
-                ['id' => $request->id_update],
-                [
-                    'department'     => $request->department,
-                    'head_of'        => $request->head_of,
-                    'phone_number'   => $request->phone_number,
-                    'email'          => $request->email,
-                    'total_employee' => $request->total_employee,
-                ]
-            );
-    
-            flash()->success('Data departemen berhasil disimpan.');
-            return redirect()->back();
-        } catch (\Exception $e) {
-            \Log::error($e);
-            flash()->error('Gagal menyimpan data departemen.');
-            return redirect()->back();
-        }
-    }
-
-    /** delete record department */
-    public function deleteRecordDepartment(Request $request)
-    {
-        try {
-            // find the department or fail if not found
-            $department = Department::findOrFail($request->id_delete);
-            $department->delete();
-            
-            flash()->success('Data departemen berhasil dihapus.');
-            return redirect()->back();
-        } catch (\Exception $e) {
-            \Log::error($e); // log the error
-            flash()->error('Gagal menghapus data departemen.');
-            return redirect()->back();
-        }
-    }
 
     /** show employee detail profile */
     public function showEmployee($id)

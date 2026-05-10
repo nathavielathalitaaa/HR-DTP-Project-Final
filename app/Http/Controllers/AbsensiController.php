@@ -12,151 +12,54 @@ class AbsensiController extends Controller
     public function index(Request $request)
     {
         $bulan = $request->bulan ?? date('Y-m');
+        $tahun = explode('-', $bulan)[0];
 
-        $query = Absensi::select(['id', 'user_id', 'tanggal', 'jam_masuk', 'jam_keluar', 'status', 'keterangan'])
-            ->with(['user' => function ($q) {
+        $tanggalMulai = $bulan . '-01';
+
+        $query = Absensi::select(['id', 'user_id', 'tanggal', 'status', 'keterangan'])
+            ->with(['user.profile', 'user' => function ($q) {
                 $q->select(['id', 'name']);
             }])
-            ->where('tanggal', 'like', $bulan . '%');
+            ->where('tanggal', $tanggalMulai);
 
-        // jika user bukan hr, tampilkan hanya absensi miliknya sendiri
-        if (!auth()->user()->hasRole('hr')) {
+        // jika user bukan hr/admin/super-admin, tampilkan hanya absensi miliknya sendiri
+        if (!auth()->user()->hasAnyRole(['hr', 'admin', 'super-admin'])) {
             $query->where('user_id', auth()->user()->id);
         }
 
-        $absensiList = $query->orderBy('tanggal', 'desc')->get();
+        $absensiList = $query->orderBy('user_id')->get();
 
-        $absensiHariIni = Absensi::where('user_id', auth()->user()->id)
-            ->where('tanggal', date('Y-m-d'))
-            ->first();
-
-        return view('hr.absensi.index', compact('absensiList', 'bulan', 'absensiHariIni'));
-    }
-
-    public function store(Request $request)
-    {
-        if (!auth()->user()->hasRole('hr')) {
-            abort(403, 'Akses ditolak. Hanya HR yang dapat menambah absensi manual.');
-        }
-
-        $request->validate([
-            'user_id'   => 'required|exists:users,id',
-            'tanggal'   => 'required|date',
-            'jam_masuk' => 'nullable|date_format:H:i',
-            'status'    => 'required|in:hadir,izin,sakit,alpha,cuti',
-        ], [
-            'user_id.required'   => 'karyawan harus dipilih',
-            'tanggal.required'   => 'tanggal harus diisi',
-            'status.required'    => 'status kehadiran harus dipilih',
-            'status.in'          => 'status tidak valid',
-        ]);
-
-        try {
-            $sudahAda = Absensi::where('user_id', $request->user_id)
-                ->where('tanggal', $request->tanggal)
-                ->first();
-
-            if ($sudahAda) {
-                flash()->error('absensi untuk karyawan ini pada tanggal tersebut sudah ada');
-                return redirect()->back();
+        $rekapList = $absensiList->map(function($item) {
+            $data = json_decode($item->keterangan, true);
+            if (!is_array($data)) {
+                $data = [
+                    'periode' => '-',
+                    'hari_dibutuhkan' => 0,
+                    'hari_hadir' => 0,
+                    'hari_tidak_hadir' => 0,
+                    'terlambat_count' => 0,
+                    'terlambat_menit' => 0,
+                    'lembur_menit' => 0,
+                ];
             }
+            $item->rekap = $data;
+            return $item;
+        });
 
-            Absensi::create([
-                'user_id'    => $request->user_id,
-                'tanggal'    => $request->tanggal,
-                'jam_masuk'  => $request->jam_masuk,
-                'jam_keluar' => $request->jam_keluar,
-                'status'     => $request->status,
-                'keterangan' => $request->keterangan,
-            ]);
-
-            flash()->success('data absensi berhasil disimpan');
-            return redirect()->back();
-
-        } catch (\Exception $e) {
-            \Log::error($e);
-            flash()->error('gagal menyimpan data absensi');
-            return redirect()->back();
-        }
-    }
-
-    public function clockIn(Request $request)
-    {
-        try {
-            $userId   = auth()->id();
-            $hari_ini = date('Y-m-d');
-            $jam_ini  = date('H:i:s');
-
-            $sudahAbsen = Absensi::where('user_id', $userId)
-                ->where('tanggal', $hari_ini)
-                ->first();
-
-            if ($sudahAbsen) {
-                flash()->error('kamu sudah melakukan absen masuk hari ini');
-                return redirect()->back();
-            }
-
-            Absensi::create([
-                'user_id'   => $userId,
-                'tanggal'   => $hari_ini,
-                'jam_masuk' => $jam_ini,
-                'status'    => 'hadir',
-            ]);
-
-            flash()->success('berhasil absen masuk pukul ' . $jam_ini);
-            return redirect()->back();
-
-        } catch (\Exception $e) {
-            \Log::error($e);
-            flash()->error('gagal melakukan absen masuk');
-            return redirect()->back();
-        }
-    }
-
-    public function clockOut(Request $request)
-    {
-        try {
-            $userId   = auth()->id();
-            $hari_ini = date('Y-m-d');
-            $jam_ini  = date('H:i:s');
-
-            $absensi = Absensi::where('user_id', $userId)
-                ->where('tanggal', $hari_ini)
-                ->first();
-
-            if (!$absensi) {
-                flash()->error('kamu belum melakukan absen masuk hari ini');
-                return redirect()->back();
-            }
-
-            if ($absensi->jam_keluar) {
-                flash()->error('kamu sudah melakukan absen keluar hari ini');
-                return redirect()->back();
-            }
-
-            $absensi->update(['jam_keluar' => $jam_ini]);
-
-            flash()->success('berhasil absen keluar pukul ' . $jam_ini);
-            return redirect()->back();
-
-        } catch (\Exception $e) {
-            \Log::error($e);
-            flash()->error('gagal melakukan absen keluar');
-            return redirect()->back();
-        }
+        return view('hr.absensi.index', compact('rekapList', 'bulan', 'tahun'));
     }
 
     public function exportExcel(Request $request)
     {
-        if (!auth()->user()->hasRole('hr')) {
-            abort(403, 'Akses ditolak. Hanya HR yang dapat mengekspor data absensi.');
+        if (!auth()->user()->hasAnyRole(['hr', 'admin', 'super-admin'])) {
+            abort(403, 'Akses ditolak. Hanya HR/Admin yang dapat mengekspor data absensi.');
         }
 
         $bulan = $request->bulan ?? date('Y-m');
+        $tanggalMulai = $bulan . '-01';
 
-        $absensiList = Absensi::with(['user' => fn($q) => $q->select('id', 'name')])
-            ->where('tanggal', 'like', $bulan . '%')
-            ->orderBy('tanggal')
+        $absensiList = Absensi::with(['user.profile', 'user' => fn($q) => $q->select('id', 'name')])
+            ->where('tanggal', $tanggalMulai)
             ->get();
 
         $namaFile = 'rekap-absensi-' . $bulan . '.csv';
@@ -173,17 +76,24 @@ class AbsensiController extends Controller
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             // header kolom
-            fputcsv($file, ['No', 'Nama Karyawan', 'Tanggal', 'Jam Masuk', 'Jam Keluar', 'Status', 'Keterangan']);
+            fputcsv($file, ['No', 'Nama Karyawan', 'Departemen/Jabatan', 'Hari Dibutuhkan', 'Hari Hadir', 'Tidak Hadir', 'Terlambat (Kali)', 'Terlambat (Menit)', 'Lembur (Menit)', 'Lembur (Jam)']);
 
             foreach ($absensiList as $i => $absensi) {
+                $data = json_decode($absensi->keterangan, true) ?? [];
+                
+                $lemburJam = isset($data['lembur_menit']) ? round($data['lembur_menit'] / 60, 2) : 0;
+                
                 fputcsv($file, [
                     $i + 1,
                     $absensi->user?->name ?? '-',
-                    $absensi->tanggal,
-                    $absensi->jam_masuk ?? '-',
-                    $absensi->jam_keluar ?? '-',
-                    ucfirst($absensi->status),
-                    $absensi->keterangan ?? '',
+                    $absensi->user?->profile?->jabatan ?? '-',
+                    $data['hari_dibutuhkan'] ?? 0,
+                    $data['hari_hadir'] ?? 0,
+                    $data['hari_tidak_hadir'] ?? 0,
+                    $data['terlambat_count'] ?? 0,
+                    $data['terlambat_menit'] ?? 0,
+                    $data['lembur_menit'] ?? 0,
+                    $lemburJam
                 ]);
             }
 
@@ -195,29 +105,60 @@ class AbsensiController extends Controller
 
     public function exportPdf(Request $request)
     {
-        if (!auth()->user()->hasRole('hr')) {
-            abort(403, 'Akses ditolak. Hanya HR yang dapat mengekspor data absensi.');
+        if (!auth()->user()->hasAnyRole(['hr', 'admin', 'super-admin'])) {
+            abort(403, 'Akses ditolak. Hanya HR/Admin yang dapat mengekspor data absensi.');
         }
 
         $bulan = $request->bulan ?? date('Y-m');
+        $tanggalMulai = $bulan . '-01';
 
-        $absensiList = Absensi::with(['user' => fn($q) => $q->select('id', 'name')])
-            ->where('tanggal', 'like', $bulan . '%')
-            ->orderBy('tanggal')
+        $absensiList = Absensi::with(['user.profile', 'user' => fn($q) => $q->select('id', 'name')])
+            ->where('tanggal', $tanggalMulai)
             ->get();
+            
+        $rekapList = $absensiList->map(function($item) {
+            $data = json_decode($item->keterangan, true);
+            if (!is_array($data)) {
+                $data = [
+                    'periode' => '-',
+                    'hari_dibutuhkan' => 0,
+                    'hari_hadir' => 0,
+                    'hari_tidak_hadir' => 0,
+                    'terlambat_count' => 0,
+                    'terlambat_menit' => 0,
+                    'lembur_menit' => 0,
+                ];
+            }
+            $item->rekap = $data;
+            return $item;
+        });
 
         // hitung ringkasan
         $ringkasan = [
-            'hadir' => $absensiList->where('status', 'hadir')->count(),
-            'izin'  => $absensiList->where('status', 'izin')->count(),
-            'sakit' => $absensiList->where('status', 'sakit')->count(),
-            'alpha' => $absensiList->where('status', 'alpha')->count(),
-            'cuti'  => $absensiList->where('status', 'cuti')->count(),
+            'total_karyawan' => $rekapList->count(),
+            'total_hadir'  => $rekapList->sum(fn($i) => $i->rekap['hari_hadir'] ?? 0),
+            'total_alfa' => $rekapList->sum(fn($i) => $i->rekap['hari_tidak_hadir'] ?? 0),
+            'total_terlambat_kali' => $rekapList->sum(fn($i) => $i->rekap['terlambat_count'] ?? 0),
+            'total_lembur_jam' => round($rekapList->sum(fn($i) => $i->rekap['lembur_menit'] ?? 0) / 60, 2),
         ];
 
-        $pdf = Pdf::loadView('hr.absensi.export-pdf', compact('absensiList', 'bulan', 'ringkasan'))
+        $pdf = Pdf::loadView('hr.absensi.export-pdf', compact('rekapList', 'bulan', 'ringkasan'))
             ->setPaper('A4', 'landscape');
 
         return $pdf->download('rekap-absensi-' . $bulan . '.pdf');
+    }
+
+    public function destroy($id)
+    {
+        if (!auth()->user()->hasAnyRole(['hr', 'admin', 'super-admin'])) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        try {
+            Absensi::findOrFail($id)->delete();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 }

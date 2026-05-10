@@ -30,6 +30,11 @@ class PinVerificationService
      */
     public function getTtdPath(User $user): ?string
     {
-        return $user->profile?->ttd_path;
+        $profile = $user->profile;
+        if (!$profile) return null;
+
+        // Prioritaskan signature_path (public storage, hasil upload baru)
+        // dibanding ttd_path (private storage, legacy)
+        return $profile->signature_path ?? $profile->ttd_path;
     }
 }

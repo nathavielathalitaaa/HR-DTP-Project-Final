@@ -126,53 +126,5 @@ class DataAwalSeeder extends Seeder
             ],
         ]);
 
-        // buat data departemen tambahan
-        DB::table('departments')->insert([
-            [
-                'department' => 'it',
-                'head_of' => 'kosong',
-                'phone_number' => '0',
-                'email' => 'kosong@hris.test',
-                'total_employee' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'department' => 'keuangan',
-                'head_of' => 'kosong',
-                'phone_number' => '0',
-                'email' => 'kosong@hris.test',
-                'total_employee' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'department' => 'sdm',
-                'head_of' => 'kosong',
-                'phone_number' => '0',
-                'email' => 'kosong@hris.test',
-                'total_employee' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'department' => 'operasional',
-                'head_of' => 'kosong',
-                'phone_number' => '0',
-                'email' => 'kosong@hris.test',
-                'total_employee' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'department' => 'pemasaran',
-                'head_of' => 'kosong',
-                'phone_number' => '0',
-                'email' => 'kosong@hris.test',
-                'total_employee' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
     }
 }

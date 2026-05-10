@@ -11,7 +11,9 @@ class DocumentApproval extends Model
         'document_id',
         'step_order',
         'jabatan',
+        'assigned_user_id', // user spesifik yang harus approve step ini (nullable)
         'label',
+        'metode_ttd',
         'approver_id',
         'ttd_snapshot',
         'cover_pdf_path',
@@ -29,6 +31,14 @@ class DocumentApproval extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approver_id');
+    }
+
+    /**
+     * Relasi ke user yang ditunjuk secara spesifik untuk approve step ini.
+     */
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'assigned_user_id');
     }
 
     // ── Scope: step yang sedang menunggu aksi ──────────

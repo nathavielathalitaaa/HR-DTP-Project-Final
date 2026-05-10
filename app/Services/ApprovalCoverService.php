@@ -25,8 +25,13 @@ class ApprovalCoverService
         $documentType = 'surat_' . $surat->jenis_surat;
 
         // Ambil pengaturan dari step flow (override) atau global
-        $step = ApprovalStep::where('document_type', $documentType)->first();
-        $overrides = $step->setting_overrides ?? [];
+        $overrides = [];
+        if ($surat->suratType) {
+            // Future: SuratType settings overrides could be added here
+        } else {
+            $step = ApprovalStep::where('document_type', $documentType)->first();
+            $overrides = $step->setting_overrides ?? [];
+        }
 
         $settings = [
             'company_name' => $overrides['company_name'] ?? DocumentSetting::get('company_name', 'HR Sinergi Hotel & Villa'),
@@ -53,21 +58,39 @@ class ApprovalCoverService
 
         $stepsWithTtd = $steps->map(function ($step) {
             $ttdBase64 = null;
-            $approver = $step->approver;
 
-            if ($approver && $approver->profile) {
-                $signature = $approver->profile->signature_path ?? $approver->profile->ttd_path;
-                
-                if ($signature) {
-                    $ttdPath = public_path('storage/' . $signature);
-                    
-                    if (file_exists($ttdPath)) {
-                        $extension = pathinfo($ttdPath, PATHINFO_EXTENSION);
-                        $mime = in_array(strtolower($extension), ['png', 'jpg', 'jpeg']) ? (strtolower($extension) === 'png' ? 'png' : 'jpeg') : 'png';
-                        $ttdBase64 = 'data:image/' . $mime . ';base64,' . base64_encode(file_get_contents($ttdPath));
+            if ($step->ttd_snapshot && $step->metode_ttd === 'stamp') {
+                // Try multiple possible paths due to potential nested 'private' directory
+                $possiblePaths = [
+                    storage_path('app/private/private/' . $step->ttd_snapshot),
+                    storage_path('app/private/' . $step->ttd_snapshot),
+                    storage_path('app/' . $step->ttd_snapshot),
+                ];
+
+                $ttdPath = null;
+                foreach ($possiblePaths as $p) {
+                    if (file_exists($p)) {
+                        $ttdPath = $p;
+                        break;
+                    }
+                }
+
+                \Log::info('TTD Rendering', [
+                    'snapshot' => $step->ttd_snapshot,
+                    'path'     => $ttdPath,
+                    'exists'   => !is_null($ttdPath),
+                ]);
+
+                if ($ttdPath) {
+                    $raw = file_get_contents($ttdPath);
+                    if ($raw !== false) {
+                        $ext  = strtolower(pathinfo($ttdPath, PATHINFO_EXTENSION));
+                        $mime = ($ext === 'png') ? 'image/png' : 'image/jpeg';
+                        $ttdBase64 = 'data:' . $mime . ';base64,' . base64_encode($raw);
                     }
                 }
             }
+
             return [
                 'label'       => $step->label,
                 'name'        => $step->approver?->name ?? '-',
@@ -96,17 +119,36 @@ class ApprovalCoverService
     public function processMerge(Surat $surat): ?string
     {
         $documentType = 'surat_' . $surat->jenis_surat;
-        $step = \App\Models\ApprovalStep::where('document_type', $documentType)->first();
-        
-        if ($step && $step->isModeAppend()) {
+        $isModeAppend = false;
+        if ($surat->suratType) {
+            $isModeAppend = true; // Default for new system
+        } else {
+            $step = \App\Models\ApprovalStep::where('document_type', $documentType)->first();
+            $isModeAppend = $step?->isModeAppend() ?? false;
+        }
+
+        if ($isModeAppend) {
             $originalPdf = storage_path('app/public/' . $surat->file_pdf);
-            $coverPdf = storage_path('app/public/' . $surat->cover_pdf_path);
-            $outputPath = storage_path('app/public/final-pdf/' . $surat->id . '_final.pdf');
+            $coverPdf    = storage_path('app/public/' . $surat->cover_pdf_path);
+            
+            // ← TAMBAH validasi ini sebelum merge:
+            if (!file_exists($originalPdf)) {
+                \Log::error('processMerge: originalPdf tidak ditemukan: ' . $originalPdf);
+                return null;
+            }
+            if (!file_exists($coverPdf)) {
+                \Log::error('processMerge: coverPdf tidak ditemukan: ' . $coverPdf);
+                return null;
+            }
+            
+            $outputDir = storage_path('app/public/final-pdf');
+            if (!is_dir($outputDir)) mkdir($outputDir, 0755, true);
+            
+            $outputPath = $outputDir . '/' . $surat->id . '_final.pdf';
             
             $this->pdfMergeService->merge($originalPdf, $coverPdf, $outputPath);
             
-            $finalPath = 'final-pdf/' . $surat->id . '_final.pdf';
-            return $finalPath;
+            return 'final-pdf/' . $surat->id . '_final.pdf';
         }
         
         return null;

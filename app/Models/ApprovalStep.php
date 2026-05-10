@@ -10,6 +10,7 @@ class ApprovalStep extends Model
         'document_type',
         'step_order',
         'jabatan',
+        'user_id',       // approver spesifik (nullable — jika null, semua dengan jabatan ini bisa approve)
         'label',
         'ttd_mode',
         'ttd_coordinates',
@@ -29,6 +30,14 @@ class ApprovalStep extends Model
     public function isModeAppend(): bool
     {
         return $this->ttd_mode === 'append';
+    }
+
+    /**
+     * Relasi ke user spesifik yang ditunjuk sebagai approver step ini.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

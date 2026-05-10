@@ -1,462 +1,223 @@
 @extends('layouts.master')
 @section('content')
     
-    <div class="group-data-[sidebar-size=lg]:ltr:md:ml-vertical-menu group-data-[sidebar-size=lg]:rtl:md:mr-vertical-menu group-data-[sidebar-size=md]:ltr:ml-vertical-menu-md group-data-[sidebar-size=md]:rtl:mr-vertical-menu-md group-data-[sidebar-size=sm]:ltr:ml-vertical-menu-sm group-data-[sidebar-size=sm]:rtl:mr-vertical-menu-sm pt-[calc(theme('spacing.header')_*_1)] pb-[calc(theme('spacing.header')_*_0.8)] px-4 group-data-[navbar=bordered]:pt-[calc(theme('spacing.header')_*_1.3)] group-data-[navbar=hidden]:pt-0 group-data-[layout=horizontal]:mx-auto group-data-[layout=horizontal]:max-w-screen-2xl group-data-[layout=horizontal]:px-0 group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:ltr:md:ml-auto group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:rtl:md:mr-auto group-data-[layout=horizontal]:md:pt-[calc(theme('spacing.header')_*_1.6)] group-data-[layout=horizontal]:px-3 group-data-[layout=horizontal]:group-data-[navbar=hidden]:pt-[calc(theme('spacing.header')_*_0.9)]">
-        <div class="container-fluid group-data-[content=boxed]:max-w-boxed mx-auto">
-
-            <div class="flex flex-col gap-2 py-4 md:flex-row md:items-center print:hidden">
-                <div class="grow">
-                    <h5 class="text-16">Absensi Utama</h5>
-                </div>
-                <ul class="flex items-center gap-2 text-sm font-normal shrink-0">
-                    <li class="relative before:content-['\ea54'] before:font-remix ltr:before:-right-1 rtl:before:-left-1  before:absolute before:text-[18px] before:-top-[3px] ltr:pr-4 rtl:pl-4 before:text-slate-400 dark:text-zink-200">
-                        <a href="#!" class="text-slate-400 dark:text-zink-200">Manajemen HR</a>
-                    </li>
-                    <li class="text-slate-700 dark:text-zink-100">
-                        Absensi Utama
-                    </li>
-                </ul>
-            </div>
-            <div class="grid grid-cols-1 gap-x-5 md:grid-cols-2 xl:grid-cols-12">
-                <div class="xl:col-span-3">
-                    <div class="ds-section">
-                        <div class="flex items-center gap-4 card-body">
-                            <div class="flex items-center justify-center rounded-md size-12 text-sky-500 bg-sky-100 text-15 dark:bg-sky-500/20 shrink-0"><i data-lucide="users-2"></i></div>
-                            <div class="overflow-hidden grow">
-                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="{{ $totalEmployee }}">0</span></h5>
-                                <p class="truncate text-slate-500 dark:text-zink-200">Total Karyawan</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="xl:col-span-3">
-                    <div class="ds-section">
-                        <div class="flex items-center gap-4 card-body">
-                            <div class="flex items-center justify-center text-red-500 bg-red-100 rounded-md size-12 text-15 dark:bg-red-500/20 shrink-0"><i data-lucide="user-x-2"></i></div>
-                            <div class="overflow-hidden grow">
-                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="{{ $absenHariIni }}">0</span></h5>
-                                <p class="truncate text-slate-500 dark:text-zink-200">Karyawan Absen (Hari Ini)</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="xl:col-span-3">
-                    <div class="ds-section">
-                        <div class="flex items-center gap-4 card-body">
-                            <div class="flex items-center justify-center text-green-500 bg-green-100 rounded-md size-12 text-15 dark:bg-green-500/20 shrink-0"><i data-lucide="user-check-2"></i></div>
-                            <div class="overflow-hidden grow">
-                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="{{ $hadirHariIni }}">0</span></h5>
-                                <p class="truncate text-slate-500 dark:text-zink-200">Karyawan Hadir (Hari Ini)</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="xl:col-span-3">
-                    <div class="ds-section">
-                        <div class="flex items-center gap-4 card-body">
-                            <div class="flex items-center justify-center rounded-md size-12 text-custom-500 bg-custom-100 text-15 dark:bg-custom-500/20 shrink-0"><i data-lucide="briefcase"></i></div>
-                            <div class="overflow-hidden grow">
-                                <h5 class="mb-1 text-16"><span class="counter-value" data-target="{{ $hariKerja }}">0</span></h5>
-                                <p class="truncate text-slate-500 dark:text-zink-200">Hari Kerja (Bulan Ini)</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="ds-section">
-                <div class="p-4">
-                    <div class="grid grid-cols-1 gap-5 mb-5 xl:grid-cols-12">
-                        <div class="xl:col-span-3">
-                            <div class="relative">
-                                <input type="text" class="ltr:pl-8 rtl:pr-8 search form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200" placeholder="Cari..." autocomplete="off">
-                                <i data-lucide="search" class="inline-block size-4 absolute ltr:left-2.5 rtl:right-2.5 top-2.5 text-slate-500 dark:text-zink-200 fill-slate-100 dark:fill-zink-600"></i>
-                            </div>
-                        </div>
-                        <div class="xl:col-span-2 xl:col-start-11">
-                            <div class="relative">
-                                <i data-lucide="calendar-range" class="absolute size-4 ltr:left-3 rtl:right-3 top-3 text-slate-500 dark:text-zink-200"></i>
-                                <input type="text" class="ltr:pl-10 rtl:pr-10 form-input border-slate-200 dark:border-zink-500 focus:outline-none focus:border-custom-500 disabled:bg-slate-100 dark:disabled:bg-zink-600 disabled:border-slate-300 dark:disabled:border-zink-500 dark:disabled:text-zink-200 disabled:text-slate-500 dark:text-zink-100 dark:bg-zink-700 dark:focus:border-custom-800 placeholder:text-slate-400 dark:placeholder:text-zink-200" data-provider="flatpickr" data-date-format="d M, Y" data-range-date="true" readonly="readonly" placeholder="Pilih Tanggal">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full whitespace-nowrap">
-                            <thead class="ltr:text-left rtl:text-right bg-slate-100 text-slate-500 dark:text-zink-200 dark:bg-zink-600">
-                                <tr class="*:px-3.5 *:py-2.5 *:font-semibold *:border-b *:border-slate-200 *:dark:border-zink-500">
-                                    <th>Nama Karyawan</th>
-                                    <th>01</th>
-                                    <th>02</th>
-                                    <th>03</th>
-                                    <th>04</th>
-                                    <th>05</th>
-                                    <th class="active">06</th>
-                                    <th>07</th>
-                                    <th>08</th>
-                                    <th>09</th>
-                                    <th>10</th>
-                                    <th>11</th>
-                                    <th>12</th>
-                                    <th>13</th>
-                                    <th>14</th>
-                                    <th>15</th>
-                                    <th>16</th>
-                                    <th>17</th>
-                                    <th>18</th>
-                                    <th>19</th>
-                                    <th>20</th>
-                                    <th>21</th>
-                                    <th>22</th>
-                                    <th>23</th>
-                                    <th>24</th>
-                                    <th>25</th>
-                                    <th>26</th>
-                                    <th>27</th>
-                                    <th>28</th>
-                                    <th>29</th>
-                                    <th>30</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="*:px-3.5 *:py-2.5 *:border-y *:border-slate-200 *:dark:border-zink-500">
-                                    <td><a href="#!" class="transition-all duration-200 ease-linear">Patricia Garcia</a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                </tr>
-                                <tr class="*:px-3.5 *:py-2.5 *:border-y *:border-slate-200 *:dark:border-zink-500">
-                                    <td><a href="#!" class="transition-all duration-200 ease-linear">Tonya Johnson</a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                </tr>
-                                <tr class="*:px-3.5 *:py-2.5 *:border-y *:border-slate-200 *:dark:border-zink-500">
-                                    <td><a href="#!" class="transition-all duration-200 ease-linear">Willie Torres</a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                </tr>
-                                <tr class="*:px-3.5 *:py-2.5 *:border-y *:border-slate-200 *:dark:border-zink-500">
-                                    <td><a href="#!" class="transition-all duration-200 ease-linear">Jose White</a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                </tr>
-                                <tr class="*:px-3.5 *:py-2.5 *:border-y *:border-slate-200 *:dark:border-zink-500">
-                                    <td><a href="#!" class="transition-all duration-200 ease-linear">Juliette Fecteau</a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                </tr>
-                                <tr class="*:px-3.5 *:py-2.5 *:border-y *:border-slate-200 *:dark:border-zink-500">
-                                    <td><a href="#!" class="transition-all duration-200 ease-linear">Jonas Frederiksen</a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                </tr>
-                                <tr class="*:px-3.5 *:py-2.5 *:border-y *:border-slate-200 *:dark:border-zink-500">
-                                    <td><a href="#!" class="transition-all duration-200 ease-linear">Kim Broberg</a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                </tr>
-                                <tr class="*:px-3.5 *:py-2.5 *:border-y *:border-slate-200 *:dark:border-zink-500">
-                                    <td><a href="#!" class="transition-all duration-200 ease-linear">Nancy Reynolds</a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                </tr>
-                                <tr class="*:px-3.5 *:py-2.5 *:border-y *:border-slate-200 *:dark:border-zink-500">
-                                    <td><a href="#!" class="transition-all duration-200 ease-linear">Thomas Hatfield</a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                </tr>
-                                <tr class="*:px-3.5 *:py-2.5 *:border-y *:border-slate-200 *:dark:border-zink-500">
-                                    <td><a href="#!" class="transition-all duration-200 ease-linear">Holly Kavanaugh</a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                    <td><i data-lucide="x" class="text-red-500 size-4"></i></td>
-                                    <td><a href="#!" data-modal-target="addOrderModal" class="text-green-500 transition-all duration-200 ease-linear hover:text-green-600"><i data-lucide="check" class="size-4"></i></a></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
+    {{-- Header Section --}}
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-playfair font-bold text-[#1A2B24]">Attendance Tracker</h1>
+            <p class="text-sm text-gray-500 mt-1 uppercase tracking-wider font-medium">Real-time daily attendance monitoring</p>
         </div>
-        
+        <div class="flex items-center gap-3">
+            <div class="relative group">
+                <i data-lucide="calendar-days" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4F6560] group-focus-within:text-[#80BB9B] transition-colors"></i>
+                <input type="text" data-provider="flatpickr" data-date-format="d M, Y" data-range-date="true" readonly="readonly" placeholder="Select Date Range"
+                    class="pl-10 pr-4 py-2 bg-white/50 backdrop-blur-sm border border-white/60 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#80BB9B]/30 transition w-64 shadow-sm font-medium text-[#1A2B24]">
+            </div>
+        </div>
     </div>
+
+    {{-- Analytics Cards --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {{-- Total Employees --}}
+        <div class="bg-white/70 backdrop-blur-md p-6 rounded-[32px] border border-white/40 shadow-sm hover:shadow-md transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-blue-50/50 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                </div>
+                <span class="text-[10px] font-bold text-blue-400 bg-blue-50 px-2 py-1 rounded-full uppercase">Global</span>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-[0.1em] mb-1">Total Employees</p>
+                <div class="flex items-baseline gap-2">
+                    <h3 class="text-3xl font-bold text-[#1A2B24] counter-value" data-target="{{ $totalEmployee }}">0</h3>
+                    <span class="text-xs font-medium text-emerald-500">Active</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Absent Today --}}
+        <div class="bg-white/70 backdrop-blur-md p-6 rounded-[32px] border border-white/40 shadow-sm hover:shadow-md transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-rose-50/50 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+                    <i data-lucide="user-x" class="w-6 h-6"></i>
+                </div>
+                <span class="text-[10px] font-bold text-rose-400 bg-rose-50 px-2 py-1 rounded-full uppercase">Today</span>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-[0.1em] mb-1">Absent Today</p>
+                <div class="flex items-baseline gap-2">
+                    <h3 class="text-3xl font-bold text-[#1A2B24] counter-value" data-target="{{ $absenHariIni }}">0</h3>
+                    <span class="text-xs font-medium text-rose-400">Missing</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Present Today --}}
+        <div class="bg-white/70 backdrop-blur-md p-6 rounded-[32px] border border-white/40 shadow-sm hover:shadow-md transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-50/50 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                    <i data-lucide="user-check" class="w-6 h-6"></i>
+                </div>
+                <span class="text-[10px] font-bold text-emerald-400 bg-emerald-50 px-2 py-1 rounded-full uppercase">Live</span>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-[0.1em] mb-1">Present Today</p>
+                <div class="flex items-baseline gap-2">
+                    <h3 class="text-3xl font-bold text-[#1A2B24] counter-value" data-target="{{ $hadirHariIni }}">0</h3>
+                    <span class="text-xs font-medium text-emerald-500">Checked-in</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Working Days --}}
+        <div class="bg-white/70 backdrop-blur-md p-6 rounded-[32px] border border-white/40 shadow-sm hover:shadow-md transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-[#80BB9B]/10 flex items-center justify-center text-[#4F6560] group-hover:scale-110 transition-transform">
+                    <i data-lucide="calendar-check" class="w-6 h-6"></i>
+                </div>
+                <span class="text-[10px] font-bold text-[#4F6560] bg-[#80BB9B]/20 px-2 py-1 rounded-full uppercase">Month</span>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-[0.1em] mb-1">Working Days</p>
+                <div class="flex items-baseline gap-2">
+                    <h3 class="text-3xl font-bold text-[#1A2B24] counter-value" data-target="{{ $hariKerja }}">0</h3>
+                    <span class="text-xs font-medium text-[#4F6560]">Days</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Main Matrix Table --}}
+    <div class="bg-white/80 backdrop-blur-xl rounded-[40px] shadow-sm border border-white/60 p-8">
+        <div class="flex flex-col lg:flex-row items-center justify-between mb-8 gap-6">
+            <div class="flex items-center gap-6 w-full lg:w-auto">
+                <div class="relative w-full sm:w-80 group">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#80BB9B] transition-colors"></i>
+                    <input type="text" placeholder="Search employee name..." 
+                        class="pl-12 pr-6 py-3 bg-white/50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#80BB9B]/20 transition w-full shadow-sm placeholder:text-gray-400">
+                </div>
+                <div class="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#80BB9B]/5 rounded-xl border border-[#80BB9B]/10">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span class="text-xs font-semibold text-[#4F6560] uppercase tracking-wider">Live Updates</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-gray-400">Period:</span>
+                <span class="px-4 py-2 bg-white/50 border border-white/60 rounded-xl text-sm font-bold text-[#4F6560] shadow-sm">
+                    {{ date('F Y') }}
+                </span>
+            </div>
+        </div>
+
+        <div class="matrix-wrapper relative overflow-hidden rounded-[24px] border border-gray-100 shadow-inner">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-sm border-separate border-spacing-0">
+                    <thead>
+                        <tr class="bg-gray-50/30">
+                            <th class="sticky left-0 z-20 bg-[#FDFDFD] px-6 py-5 text-left font-bold text-[#4F6560] border-b border-gray-100 whitespace-nowrap shadow-[4px_0_10px_-4px_rgba(0,0,0,0.05)] uppercase tracking-widest text-[10px]">
+                                Employee Details
+                            </th>
+                            @for($i=1; $i<=31; $i++)
+                                <th class="px-3 py-5 text-center font-bold text-[11px] border-b border-gray-100 transition-colors {{ date('d') == $i ? 'bg-[#80BB9B]/10 text-[#4F6560] border-b-2 border-b-[#80BB9B]' : 'text-gray-400' }}">
+                                    {{ str_pad($i, 2, '0', STR_PAD_LEFT) }}
+                                </th>
+                            @endfor
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        @php
+                            $employees = ['Patricia Garcia', 'Tonya Johnson', 'Willie Torres', 'Jose White', 'Juliette Fecteau', 'Jonas Frederiksen', 'Kim Broberg', 'Nancy Reynolds', 'Thomas Hatfield', 'Holly Kavanaugh'];
+                        @endphp
+                        @foreach($employees as $name)
+                        <tr class="group hover:bg-[#80BB9B]/5 transition-all duration-200">
+                            <td class="sticky left-0 z-10 bg-white group-hover:bg-[#F9FBFA] px-6 py-4 font-bold text-[#1A2B24] border-b border-gray-50 whitespace-nowrap shadow-[4px_0_10px_-4px_rgba(0,0,0,0.03)] transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-[10px] text-gray-500 font-bold uppercase">
+                                        {{ substr($name, 0, 2) }}
+                                    </div>
+                                    <span>{{ $name }}</span>
+                                </div>
+                            </td>
+                            @for($i=1; $i<=31; $i++)
+                                <td class="px-3 py-4 text-center border-b border-gray-50 transition-colors {{ date('d') == $i ? 'bg-[#80BB9B]/5' : '' }}">
+                                    @php $status = rand(1,15); @endphp
+                                    @if($status > 4)
+                                        <div class="relative group/ttd">
+                                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500 mx-auto opacity-70 group-hover:opacity-100 transition-all"></i>
+                                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-[#1A2B24] text-[10px] text-white rounded opacity-0 group-hover/ttd:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-30">
+                                                Present (08:00)
+                                            </div>
+                                        </div>
+                                    @elseif($status == 2)
+                                        <div class="relative group/ttd">
+                                            <i data-lucide="x-circle" class="w-4 h-4 text-rose-400 mx-auto opacity-70 group-hover:opacity-100 transition-all"></i>
+                                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-rose-600 text-[10px] text-white rounded opacity-0 group-hover/ttd:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-30">
+                                                Absent
+                                            </div>
+                                        </div>
+                                    @elseif($status == 3)
+                                        <div class="relative group/ttd">
+                                            <i data-lucide="clock" class="w-4 h-4 text-amber-500 mx-auto opacity-70 group-hover:opacity-100 transition-all"></i>
+                                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-amber-600 text-[10px] text-white rounded opacity-0 group-hover/ttd:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-30">
+                                                Late
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="text-gray-200 font-light">-</span>
+                                    @endif
+                                </td>
+                            @endfor
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-8 flex flex-wrap gap-6 items-center text-[11px] font-bold text-gray-400 uppercase tracking-widest border-t border-gray-50 pt-6">
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                </div>
+                <span>Present</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-rose-500/20 flex items-center justify-center">
+                    <div class="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+                </div>
+                <span>Absent</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-amber-500/20 flex items-center justify-center">
+                    <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                </div>
+                <span>Late</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-gray-300 font-normal">-</span>
+                <span>Off Day</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.02);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(128, 187, 155, 0.2);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(128, 187, 155, 0.4);
+        }
+    </style>
+
 
 @section('script')
 

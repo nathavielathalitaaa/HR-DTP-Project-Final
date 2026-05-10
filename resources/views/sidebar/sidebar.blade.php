@@ -10,7 +10,7 @@
         {{-- profile --}}
         <a href="{{ route('profile.show') }}"
            class="{{ request()->routeIs('profile.show') ? 'active' : '' }}"
-           title="Profil">
+           title="Profile">
             <i data-lucide="user-circle"></i>
         </a>
 
@@ -25,7 +25,7 @@
         @if(auth()->user()->hasRole('hr'))
         <a href="{{ route('hr/employee/list') }}"
            class="{{ request()->routeIs('hr/employee/list') ? 'active' : '' }}"
-           title="Karyawan">
+           title="Employees">
             <i data-lucide="layout-grid"></i>
         </a>
         @endif
@@ -34,55 +34,40 @@
         @if(auth()->user()->hasRole('hr'))
         <a href="{{ route('hr/absensi/page') }}"
            class="{{ request()->routeIs('hr/absensi/page') ? 'active' : '' }}"
-           title="Absensi">
+           title="Attendance">
             <i data-lucide="calendar-range"></i>
+        </a>
+        <a href="{{ route('hr/absensi/ai') }}"
+           class="{{ request()->routeIs('hr/absensi/ai*') ? 'active' : '' }}"
+           title="AI Summary">
+            <i data-lucide="sparkles"></i>
         </a>
         @endif
 
         {{-- surat --}}
         <a href="{{ route('surat.index') }}"
-           class="{{ request()->routeIs('surat.*') ? 'active' : '' }}"
-           title="Surat">
+           class="{{ request()->routeIs('surat.*') && !request()->routeIs('surat-type.*') ? 'active' : '' }}"
+           title="Letters">
             <i data-lucide="mail"></i>
         </a>
 
-        {{-- cuti hr --}}
+        {{-- jenis surat (hr only) --}}
         @if(auth()->user()->hasRole('hr'))
-        <a href="{{ route('hr/leave/hr/page') }}"
-           class="{{ request()->routeIs('hr/leave/hr/page') ? 'active' : '' }}"
-           title="Cuti">
-            <i data-lucide="calendar-check"></i>
-        </a>
-
-        {{-- penggajian --}}
-        <a href="{{ route('hr/penggajian/page') }}"
-           class="{{ request()->routeIs('hr/penggajian/page') ? 'active' : '' }}"
-           title="Penggajian">
-            <i data-lucide="trending-up"></i>
-        </a>
-
-        {{-- flow approval --}}
-        <a href="{{ route('hr.approval-flow.index') }}"
-           class="{{ request()->routeIs('hr.approval-flow.*') ? 'active' : '' }}"
-           title="Flow Approval">
-            <i data-lucide="file-text"></i>
+        <a href="{{ route('surat-type.index') }}"
+           class="{{ request()->routeIs('surat-type.*') ? 'active' : '' }}"
+           title="Letter Types">
+            <i data-lucide="file-cog"></i>
         </a>
         @endif
 
-        {{-- cuti staff --}}
-        @if(auth()->user()->hasRole('staff'))
-        <a href="{{ route('hr/leave/employee/page') }}"
-           class="{{ request()->routeIs('hr/leave/employee/page') ? 'active' : '' }}"
-           title="Cuti Saya">
-            <i data-lucide="calendar-check"></i>
-        </a>
-        @endif
+
+
 
     </div>
 
     {{-- ── logout at bottom ── --}}
     <div class="hv-sidebar-bottom">
-        <a href="{{ route('logout') }}" class="hv-sidebar-logout" title="Keluar">
+        <a href="{{ route('logout') }}" class="hv-sidebar-logout" title="Logout">
             <i data-lucide="log-out"></i>
         </a>
     </div>

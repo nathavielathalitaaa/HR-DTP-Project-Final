@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" class="light scroll-smooth group" data-layout="vertical" data-sidebar="dark" data-sidebar-size="lg" data-mode="light" data-topbar="light" data-skin="default" data-navbar="sticky" data-content="fluid" dir="ltr">
 <head>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <meta charset="utf-8">
     <title>HR | Sinergi Hotel & Vila - HR Management System</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -13,6 +16,19 @@
     <script src="{{ URL::to('assets/js/layout.js') }}"></script>
     <!-- sinergi hotel & vila css -->
     <link rel="stylesheet" href="{{ URL::to('assets/css/starcode2.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          playfair: ['"Playfair Display"', 'serif'],
+          poppins: ['Poppins', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
     
     <!-- hivi design system fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -121,12 +137,10 @@
   ============================================= */
   .page {
     margin-left: 110px;
-    padding: 30px;
-    padding-top: 86px;
+    padding: 20px;
+    padding-top: 64px;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: block;
   }
 
   .page > * {
@@ -463,54 +477,38 @@
     padding: 20px;
 }
 
-/* ── Responsive: Mobile ── */
-@media (max-width: 768px) {
+/* ── Responsive: Mobile & Tablet (Offcanvas) ── */
+@media (max-width: 1024px) {
     .hv-sidebar {
-        top: auto;
-        bottom: 16px;
-        left: 50%;
-        transform: translateX(-50%);
-        flex-direction: row;
-        width: auto;
-        max-width: calc(100vw - 32px);
-        height: 64px;
-        border-radius: 999px;
-        padding: 0 16px;
-        gap: 4px;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        transform: translateY(0) translateX(-100%);
+        height: 100vh;
+        width: 80px;
+        border-radius: 0;
+        padding: 80px 0 20px 0;
+        background: #ffffff;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.1);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .hv-sidebar.open {
+        transform: translateY(0) translateX(0);
     }
     .hv-sidebar-nav {
-        flex-direction: row;
-        max-height: none;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding: 0;
-        gap: 4px;
+        max-height: calc(100vh - 180px);
     }
     .hv-sidebar-bottom {
-        margin-top: 0;
-        margin-left: 4px;
-        padding: 0;
+        margin-top: auto;
     }
-    .hv-sidebar-bottom::before {
-        display: none;
-    }
-    .hv-sidebar a {
-        width: 40px;
-        height: 40px;
-    }
-    .hv-sidebar a i,
-    .hv-sidebar a svg {
-        width: 18px;
-        height: 18px;
-    }
-    /* Hide tooltips on mobile */
-    .hv-sidebar a[title]:hover::after,
-    .hv-sidebar a[title]:hover::before {
-        display: none;
-    }
-    .hv-main {
+    .hv-main, .page {
         margin-left: 0;
-        padding-bottom: 90px;
+        padding-bottom: 32px;
+    }
+    .page {
+      padding-top: 76px;
+      padding-left: 16px;
+      padding-right: 16px;
     }
 }
 
@@ -561,6 +559,28 @@
     margin-bottom: 0px !important;
     font-size: 16px;
   }
+  
+  /* ── Skeleton Loading ── */
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+  .real-content {
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .real-content.loaded {
+    opacity: 1;
+  }
+  .skeleton-wrapper {
+    transition: opacity 200ms ease;
+  }
 </style>
 
 </head>
@@ -568,7 +588,8 @@
 <script>
     lucide.createIcons();
 </script>
-<body class="text-base bg-body-bg text-body font-public dark:text-zink-100 dark:bg-zink-800 group-data-[skin=bordered]:bg-body-bordered group-data-[skin=bordered]:dark:bg-zink-700">
+@stack('scripts')
+<body class="text-base bg-body-bg text-body font-poppins dark:text-zink-100 dark:bg-zink-800 group-data-[skin=bordered]:bg-body-bordered group-data-[skin=bordered]:dark:bg-zink-700">
 
   <!-- floating sidebar (outside all containers) -->
   @include('sidebar.sidebar')
@@ -583,180 +604,36 @@
           
           <div class="flex items-center w-full group-data-[layout=horizontal]:mx-auto group-data-[layout=horizontal]:max-w-screen-2xl navbar-header group-data-[layout=horizontal]:ltr:xl:pr-3 group-data-[layout=horizontal]:rtl:xl:pl-3">
             
+            <!-- hamburger (mobile only) -->
+            <button type="button" id="mobile-menu-btn" class="flex items-center justify-center p-2 mr-3 text-slate-500 rounded-lg lg:hidden hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-200">
+              <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
             <!-- logo (horizontal only) -->
             <div class="items-center justify-center hidden px-5 text-center h-header group-data-[layout=horizontal]:md:flex group-data-[layout=horizontal]:ltr::pl-0 group-data-[layout=horizontal]:rtl:pr-0">
               <a href="{{ route('home') }}">
-                <img src="{{ URL::to('assets/images/logo-dark.png') }}" alt="" class="h-6 mx-auto">
+                <img src="{{ URL::to('assets/images/logo-sinergi.png') }}" alt="" class="h-10 mx-auto">
               </a>
             </div>
 
             <!-- search bar -->
             <div class="relative hidden ltr:ml-3 rtl:mr-3 lg:block group-data-[layout=horizontal]:hidden group-data-[layout=horizontal]:lg:block">
-              <input type="text" id="topbar-search" class="py-2 pr-4 text-sm text-topbar-item bg-topbar border border-topbar-border rounded pl-8 placeholder:text-slate-400 form-control focus-visible:outline-0 min-w-[300px] focus:border-blue-400 group-data-[topbar=dark]:bg-topbar-dark group-data-[topbar=dark]:border-topbar-border-dark group-data-[topbar=dark]:placeholder:text-slate-500 group-data-[topbar=dark]:text-topbar-item-dark group-data-[topbar=brand]:bg-topbar-brand group-data-[topbar=brand]:border-topbar-border-brand group-data-[topbar=brand]:placeholder:text-blue-300 group-data-[topbar=brand]:text-topbar-item-brand group-data-[topbar=dark]:dark:bg-zink-700 group-data-[topbar=dark]:dark:border-zink-500 group-data-[topbar=dark]:dark:text-zink-100" placeholder="Cari karyawan, menu, departemen" autocomplete="off">
+              <input type="text" id="topbar-search" class="py-2 pr-4 text-sm text-topbar-item bg-topbar border border-topbar-border rounded pl-8 placeholder:text-slate-400 form-control focus-visible:outline-0 min-w-[300px] focus:border-blue-400 group-data-[topbar=dark]:bg-topbar-dark group-data-[topbar=dark]:border-topbar-border-dark group-data-[topbar=dark]:placeholder:text-slate-500 group-data-[topbar=dark]:text-topbar-item-dark group-data-[topbar=brand]:bg-topbar-brand group-data-[topbar=brand]:border-topbar-border-brand group-data-[topbar=brand]:placeholder:text-blue-300 group-data-[topbar=brand]:text-topbar-item-brand group-data-[topbar=dark]:dark:bg-zink-700 group-data-[topbar=dark]:dark:border-zink-500 group-data-[topbar=dark]:dark:text-zink-100" placeholder="Search employees, menus, or files" autocomplete="off">
               <i data-lucide="search" class="inline-block size-4 absolute left-2.5 top-2.5 text-topbar-item fill-slate-100 group-data-[topbar=dark]:fill-topbar-item-bg-hover-dark group-data-[topbar=dark]:text-topbar-item-dark group-data-[topbar=brand]:fill-topbar-item-bg-hover-brand group-data-[topbar=brand]:text-topbar-item-brand group-data-[topbar=dark]:dark:text-zink-200 group-data-[topbar=dark]:dark:fill-zink-600"></i>
               <div id="search-results" style="display:none; position:absolute; top:42px; left:0; width:340px; background:#fff; border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,0.12); z-index:9999; max-height:320px; overflow-y:auto;" class="dark:bg-zink-700"></div>
             </div>
 
             <!-- right side: icons + notifications + profile -->
             <div class="flex gap-3 ms-auto">
-              
-              <!-- theme toggle -->
-              <div class="relative flex items-center h-header">
-                <button type="button" class="inline-flex relative justify-center items-center p-0 text-topbar-item transition-all w-[37.5px] h-[37.5px] duration-200 ease-linear bg-topbar rounded-md btn hover:bg-topbar-item-bg-hover hover:text-topbar-item-hover group-data-[topbar=dark]:bg-topbar-dark group-data-[topbar=dark]:hover:bg-topbar-item-bg-hover-dark group-data-[topbar=dark]:hover:text-topbar-item-hover-dark group-data-[topbar=brand]:bg-topbar-brand group-data-[topbar=brand]:hover:bg-topbar-item-bg-hover-brand group-data-[topbar=brand]:hover:text-topbar-item-hover-brand group-data-[topbar=dark]:dark:bg-zink-700 group-data-[topbar=dark]:dark:hover:bg-zink-600 group-data-[topbar=brand]:text-topbar-item-brand group-data-[topbar=dark]:dark:hover:text-zink-50 group-data-[topbar=dark]:dark:text-zink-200 group-data-[topbar=dark]:text-topbar-item-dark" id="light-dark-mode">
-                  <i data-lucide="sun" class="inline-block w-5 h-5 stroke-1 fill-slate-100 group-data-[topbar=dark]:fill-topbar-item-bg-hover-dark group-data-[topbar=brand]:fill-topbar-item-bg-hover-brand"></i>
-                </button>
-              </div>
-
-              <!-- notifications -->
-              @php
-                $myNotifs = [];
-                $unreadCount = 0;
-                if (auth()->check()) {
-                    $myNotifs = \App\Models\Notification::where('user_id', auth()->id())
-                        ->orderBy('created_at', 'desc')
-                        ->limit(10)
-                        ->get();
-                    $unreadCount = \App\Models\Notification::where('user_id', auth()->id())
-                        ->where('is_read', false)
-                        ->count();
-                }
-              @endphp
-              <div class="relative flex items-center dropdown h-header">
-                <button type="button" class="inline-flex justify-center relative items-center p-0 text-topbar-item transition-all w-[37.5px] h-[37.5px] duration-200 ease-linear bg-topbar rounded-md dropdown-toggle btn hover:bg-topbar-item-bg-hover hover:text-topbar-item-hover group-data-[topbar=dark]:bg-topbar-dark group-data-[topbar=dark]:hover:bg-topbar-item-bg-hover-dark group-data-[topbar=dark]:hover:text-topbar-item-hover-dark group-data-[topbar=brand]:bg-topbar-brand group-data-[topbar=brand]:hover:bg-topbar-item-bg-hover-brand group-data-[topbar=brand]:hover:text-topbar-item-hover-brand group-data-[topbar=dark]:dark:bg-zink-700 group-data-[topbar=dark]:dark:hover:bg-zink-600 group-data-[topbar=brand]:text-topbar-item-brand group-data-[topbar=dark]:dark:hover:text-zink-50 group-data-[topbar=dark]:dark:text-zink-200 group-data-[topbar=dark]:text-topbar-item-dark" id="notificationDropdown" data-bs-toggle="dropdown">
-                  <i data-lucide="bell-ring" class="inline-block w-5 h-5 stroke-1 fill-slate-100 group-data-[topbar=dark]:fill-topbar-item-bg-hover-dark group-data-[topbar=brand]:fill-topbar-item-bg-hover-brand"></i>
-                  @if($unreadCount > 0)
-                  <span class="absolute top-0 right-0 flex w-1.5 h-1.5">
-                    <span class="absolute inline-flex w-full h-full rounded-full opacity-75 animate-ping bg-sky-400"></span>
-                    <span class="relative inline-flex w-1.5 h-1.5 rounded-full bg-sky-500"></span>
-                  </span>
-                  @endif
-                </button>
-                <div class="absolute z-50 hidden ltr:text-left rtl:text-right bg-white rounded-md shadow-md !top-4 dropdown-menu min-w-[20rem] lg:min-w-[26rem] dark:bg-zink-600" aria-labelledby="notificationDropdown">
-                  <div class="p-4 border-b border-slate-100 dark:border-zink-500">
-                    <h6 class="mb-0 text-16 flex items-center gap-2">Notifikasi <span class="inline-flex items-center justify-center w-5 h-5 text-[11px] font-medium border rounded-full text-white bg-orange-500 border-orange-500">{{ $unreadCount }}</span></h6>
-                  </div>
-                  <div data-simplebar="" class="max-h-[350px]">
-                    <div class="flex flex-col" id="notification-list">
-                      @forelse($myNotifs as $notif)
-                      <a href="{{ $notif->url ?? '#' }}" class="flex gap-3 p-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 dark:hover:bg-zink-500 {{ !$notif->is_read ? 'bg-sky-50/30' : '' }}">
-                        <div class="flex items-center justify-center w-10 h-10 rounded-md shrink-0" style="background:#e0f2fe;">
-                          <i data-lucide="{{ str_contains($notif->title, 'Tolak') ? 'alert-circle' : 'file-check' }}" class="w-5 h-5" style="color:#0284c7;"></i>
-                        </div>
-                        <div class="grow">
-                          <h6 class="mb-1 text-sm font-bold {{ !$notif->is_read ? 'text-custom-500' : '' }}">{{ $notif->title }}</h6>
-                          <p class="mb-1 text-xs text-slate-500 dark:text-zink-300 leading-relaxed">
-                            {{ $notif->message }}
-                          </p>
-                          <p class="mb-0 text-[10px] text-slate-400 dark:text-zink-400">
-                            <i data-lucide="clock" class="inline-block w-3 h-3 mr-1"></i>
-                            {{ $notif->created_at->diffForHumans() }}
-                          </p>
-                        </div>
-                        @if(!$notif->is_read)
-                        <div class="flex items-center self-start gap-2 text-xs text-slate-500 shrink-0 dark:text-zink-300">
-                          <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                        </div>
-                        @endif
-                      </a>
-                      @empty
-                      <div class="p-6 text-center">
-                        <i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
-                        <p class="text-sm text-slate-500 dark:text-zink-300">Tidak ada notifikasi baru</p>
-                      </div>
-                      @endforelse
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-2 p-4 border-t border-slate-200 dark:border-zink-500">
-                    <div class="grow">
-                      <p class="text-xs text-slate-400">Menampilkan 10 notifikasi terbaru</p>
-                    </div>
-                    <div class="shrink-0">
-                      <a href="{{ route('surat.index') }}" type="button" class="px-3 py-1.5 text-xs text-white transition-all duration-200 ease-linear btn bg-custom-500 border-custom-500 hover:bg-custom-600 focus:bg-custom-600 active:bg-custom-600">
-                        Lihat Semua <i data-lucide="move-right" class="inline-block w-3.5 h-3.5 ml-1"></i>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- profile dropdown -->
-              <div class="relative flex items-center dropdown h-header">
-                <button type="button" class="inline-block p-0 transition-all duration-200 ease-linear bg-topbar rounded-full text-topbar-item dropdown-toggle btn hover:bg-topbar-item-bg-hover hover:text-topbar-item-hover group-data-[topbar=dark]:text-topbar-item-dark group-data-[topbar=dark]:bg-topbar-dark group-data-[topbar=dark]:hover:bg-topbar-item-bg-hover-dark group-data-[topbar=dark]:hover:text-topbar-item-hover-dark group-data-[topbar=brand]:bg-topbar-brand group-data-[topbar=brand]:hover:bg-topbar-item-bg-hover-brand group-data-[topbar=brand]:hover:text-topbar-item-hover-brand group-data-[topbar=dark]:dark:bg-zink-700 group-data-[topbar=dark]:dark:hover:bg-zink-600 group-data-[topbar=brand]:text-topbar-item-brand group-data-[topbar=dark]:dark:hover:text-zink-50 group-data-[topbar=dark]:dark:text-zink-200" id="dropdownMenuButton" data-bs-toggle="dropdown">
-                  <div class="bg-pink-100 rounded-full">
-                    @if(auth()->user()->avatar)
-                      <img src="{{ URL::to('assets/images/user/' . auth()->user()->avatar) }}" alt="" class="w-[37.5px] h-[37.5px] rounded-full object-cover">
-                    @else  
-                      <div class="flex items-center justify-center font-medium rounded-full size-10 shrink-0 bg-slate-200 text-slate-800 dark:text-zink-50 dark:bg-zink-600">
-                        @php
-                          $fullName = auth()->user()->name;
-                          $parts = explode(' ', $fullName);
-                          $initials = '';
-                          foreach ($parts as $part) {
-                            $initials .= strtoupper(substr($part, 0, 1));
-                          }
-                        @endphp
-                        {{ $initials }}
-                      </div>
-                    @endif
-                  </div>
-                </button>
-                <div class="absolute z-50 hidden p-4 ltr:text-left rtl:text-right bg-white rounded-md shadow-md !top-4 dropdown-menu min-w-[14rem] dark:bg-zink-600" aria-labelledby="dropdownMenuButton">
-                  <a href="#!" class="flex gap-3 mb-3">
-                    <div class="relative inline-block shrink-0">
-                      <div class="rounded bg-slate-100 dark:bg-zink-500">
-                        @if(auth()->user()->avatar)
-                          <img src="{{ URL::to('assets/images/user/' . auth()->user()->avatar) }}" alt="" class="w-[37.5px] h-[37.5px] rounded-full object-cover">
-                        @else  
-                          <div class="flex items-center justify-center font-medium rounded-full size-10 shrink-0 bg-slate-200 text-slate-800 dark:text-zink-50 dark:bg-zink-600">
-                            @php
-                              $fullName = auth()->user()->name;
-                              $parts = explode(' ', $fullName);
-                              $initials = '';
-                              foreach ($parts as $part) {
-                                $initials .= strtoupper(substr($part, 0, 1));
-                              }
-                            @endphp
-                            {{ $initials }}
-                          </div>
-                        @endif
-                      </div>
-                      <span class="-top-1 ltr:-right-1 rtl:-left-1 absolute w-2.5 h-2.5 bg-green-400 border-2 border-white rounded-full dark:border-zink-600"></span>
-                    </div>
-                    <div>
-                      <h6 class="mb-1 text-15">{{ Session::get('name') }}</h6>
-                      <p class="text-slate-500 dark:text-zink-300">{{ Session::get('position') }}</p>
-                    </div>
-                  </a>
-                  <ul>
-                    <li>
-                      <a class="block ltr:pr-4 rtl:pl-4 py-1.5 text-base font-medium transition-all duration-200 ease-linear text-slate-600 dropdown-item hover:text-custom-500 focus:text-custom-500 dark:text-zink-200 dark:hover:text-custom-500 dark:focus:text-custom-500" href="{{ url('page/account/'.Session::get('user_id')) }}">
-                        <i data-lucide="user-2" class="inline-block size-4 ltr:mr-2 rtl:ml-2"></i> profil saya
-                      </a>
-                    </li>
-                    <li>
-                      <a class="block ltr:pr-4 rtl:pl-4 py-1.5 text-base font-medium transition-all duration-200 ease-linear text-slate-600 dropdown-item hover:text-custom-500 focus:text-custom-500 dark:text-zink-200 dark:hover:text-custom-500 dark:focus:text-custom-500" href="apps-mailbox.html">
-                        <i data-lucide="mail" class="inline-block size-4 ltr:mr-2 rtl:ml-2"></i> kotak masuk 
-                        <span class="inline-flex items-center justify-center w-5 h-5 ltr:ml-2 rtl:mr-2 text-[11px] font-medium border rounded-full text-white bg-red-500 border-red-500">15</span>
-                      </a>
-                    </li>
-                    <li class="pt-2 mt-2 border-t border-slate-200 dark:border-zink-500">
-                      <a class="block ltr:pr-4 rtl:pl-4 py-1.5 text-base font-medium transition-all duration-200 ease-linear text-slate-600 dropdown-item hover:text-custom-500 focus:text-custom-500 dark:text-zink-200 dark:hover:text-custom-500 dark:focus:text-custom-500" href="{{ route('logout') }}">
-                        <i data-lucide="log-out" class="inline-block size-4 ltr:mr-2 rtl:ml-2"></i> keluar
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+            </div>
 
             </div>
           </div>
         </div>
-      </div>
     </header>
 
     <!-- page content -->
-    <div class="min-h-screen bg-gradient-to-br from-[#F6F6F6] to-[#80BB9B]">
-      <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="max-w-7xl mx-auto px-6">
         @yield('content')
       </div>
     </div>
@@ -765,14 +642,52 @@
   <!-- end page wrapper -->
 
   <!-- scripts -->
-  <script src="{{ URL::to('assets/js/lucide.js') }}"></script>
+  <script src="{{ URL::to('assets/libs/lucide/umd/lucide.js') }}"></script>
   <script src="{{ URL::to('assets/js/layout.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   
-  <!-- initialize icons -->
+  <!-- mobile sidebar overlay -->
+  <div id="sidebar-overlay" class="fixed inset-0 z-[999998] hidden bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0"></div>
+
+  <!-- initialize icons & scripts -->
   <script>
     lucide.createIcons();
+    document.addEventListener('DOMContentLoaded', function() {
+      // Mobile Menu
+      const btn = document.getElementById('mobile-menu-btn');
+      const sidebar = document.getElementById('hv-sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      
+      if(btn && sidebar && overlay) {
+        function toggleMenu() {
+          sidebar.classList.toggle('open');
+          if (sidebar.classList.contains('open')) {
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+          } else {
+            overlay.classList.add('opacity-0');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+          }
+        }
+        btn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+      }
+
+      // Skeleton Loading Toggle
+      setTimeout(() => {
+        document.querySelectorAll('.skeleton-wrapper').forEach(el => {
+          el.style.opacity = '0';
+          setTimeout(() => el.style.display = 'none', 200);
+        });
+        document.querySelectorAll('.real-content').forEach(el => {
+          el.classList.remove('hidden');
+          // trigger reflow
+          void el.offsetWidth;
+          el.classList.add('loaded');
+        });
+      }, 600); // 600ms artificial delay for perceived performance
+    });
   </script>
 
 </body>

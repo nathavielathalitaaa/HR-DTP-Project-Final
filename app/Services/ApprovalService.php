@@ -33,14 +33,45 @@ class ApprovalService
         DB::transaction(function () use ($steps, $documentType, $documentId) {
             foreach ($steps as $index => $step) {
                 DocumentApproval::create([
-                    'document_type' => $documentType,
-                    'document_id'   => $documentId,
-                    'step_order'    => $step->step_order,
-                    'jabatan'       => $step->jabatan,
-                    'label'         => $step->label,
-                    'approver_id'   => null,
+                    'document_type'    => $documentType,
+                    'document_id'      => $documentId,
+                    'step_order'       => $step->step_order,
+                    'jabatan'          => $step->jabatan,
+                    'assigned_user_id' => $step->user_id, // copy user spesifik dari template step
+                    'label'            => $step->label,
+                    'approver_id'      => null,
                     // Step pertama langsung 'waiting', sisanya 'pending'
-                    'status'        => $index === 0 ? 'waiting' : 'pending',
+                    'status'           => $index === 0 ? 'waiting' : 'pending',
+                ]);
+            }
+        });
+
+        return true;
+    }
+
+    /**
+     * Inisialisasi step approval dari SuratType.
+     */
+    public function initFromSuratType(\App\Models\Surat $surat): bool
+    {
+        $suratType = $surat->suratType;
+        if (!$suratType) return false;
+
+        $approvers = $suratType->approvers;
+        if ($approvers->isEmpty()) return false;
+
+        DB::transaction(function () use ($approvers, $surat) {
+            foreach ($approvers as $index => $approver) {
+                DocumentApproval::create([
+                    'document_type'    => 'surat_' . $surat->suratType->kode,
+                    'document_id'      => $surat->id,
+                    'step_order'       => $approver->urutan,
+                    'jabatan'          => $approver->jabatan_label,
+                    'assigned_user_id' => $approver->user_id,
+                    'label'            => $approver->label,
+                    'metode_ttd'       => $approver->metode_ttd,
+                    'approver_id'      => null,
+                    'status'           => $index === 0 ? 'waiting' : 'pending',
                 ]);
             }
         });
@@ -70,11 +101,8 @@ class ApprovalService
             return ['success' => false, 'message' => 'Tidak ada step yang menunggu approval.', 'selesai' => false];
         }
 
-        // Cek jabatan approver HARUS sesuai step — tanpa pengecualian role
-        $jabatanApprover = strtolower($approver->profile?->jabatan ?? '');
-        $jabatanStep     = strtolower($currentStep->jabatan ?? '');
-
-        if ($jabatanApprover !== $jabatanStep) {
+        // Cek apakah user ini berhak approve step ini
+        if (!$this->isUserAllowedForStep($currentStep, $approver)) {
             return [
                 'success' => false,
                 'message' => "Bukan giliran Anda untuk approve. Step ini untuk {$currentStep->label} (jabatan: {$currentStep->jabatan}).",
@@ -139,11 +167,8 @@ class ApprovalService
             return ['success' => false, 'message' => 'Tidak ada step yang aktif.', 'selesai' => false];
         }
 
-        // Cek jabatan approver HARUS sesuai step — tanpa pengecualian role
-        $jabatanApprover = strtolower($approver->profile?->jabatan ?? '');
-        $jabatanStep     = strtolower($currentStep->jabatan ?? '');
-
-        if ($jabatanApprover !== $jabatanStep) {
+        // Cek apakah user ini berhak reject step ini
+        if (!$this->isUserAllowedForStep($currentStep, $approver)) {
             return [
                 'success' => false,
                 'message' => "Bukan giliran Anda untuk menolak. Step ini untuk {$currentStep->label} (jabatan: {$currentStep->jabatan}).",
@@ -187,8 +212,15 @@ class ApprovalService
             // Hapus semua log approval lama
             DocumentApproval::forDocument($documentType, $documentId)->delete();
 
-            // Init ulang dari awal
-            $this->initApproval($documentType, $documentId);
+            // Init ulang
+            if (str_starts_with($documentType, 'surat_')) {
+                $surat = \App\Models\Surat::find($documentId);
+                if ($surat) {
+                    $this->initFromSuratType($surat);
+                }
+            } else {
+                $this->initApproval($documentType, $documentId);
+            }
         });
 
         return true;
@@ -214,11 +246,41 @@ class ApprovalService
 
         if (!$waitingStep) return false;
 
-        // Strict jabatan check — no role bypass
-        $jabatanUser = strtolower($user->profile?->jabatan ?? '');
-        $jabatanStep = strtolower($waitingStep->jabatan ?? '');
+        return $this->isUserAllowedForStep($waitingStep, $user);
+    }
 
-        return $jabatanUser === $jabatanStep;
+    /**
+     * Cek apakah user berhak mengaksi step tertentu.
+     * Jika step punya assigned_user_id → hanya user itu saja yang boleh.
+     * Jika tidak → cek jabatan.
+     */
+    private function isUserAllowedForStep(DocumentApproval $step, User $user): bool
+    {
+        // Jika step ditunjuk ke user spesifik, hanya user itu yang bisa approve
+        if ($step->assigned_user_id) {
+            return (int) $step->assigned_user_id === (int) $user->id;
+        }
+
+        $userRole = strtolower($user->role_name ?? '');
+        
+        // Super admin bisa approve semuanya
+        if ($userRole === 'super-admin') {
+            return true;
+        }
+
+        $jabatanUser = strtolower($user->profile?->jabatan ?? '');
+        $jabatanStep = strtolower($step->jabatan ?? '');
+
+        if ($jabatanUser === $jabatanStep) {
+            return true;
+        }
+
+        // Khusus: Jika step ditujukan untuk jabatan "hr", izinkan user dengan role 'hr' atau 'supervisor'
+        if ($jabatanStep === 'hr' && in_array($userRole, ['hr', 'supervisor'])) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -237,14 +299,9 @@ class ApprovalService
     public function markAsRead(string $documentType, int $documentId, User $user): void
     {
         $waitingStep = $this->getWaitingStep($documentType, $documentId);
-        
-        if ($waitingStep) {
-            // Hanya user dengan jabatan yang cocok bisa mark as read
-            $jabatanUser = strtolower($user->profile?->jabatan ?? '');
-            $jabatanStep = strtolower($waitingStep->jabatan ?? '');
-            if ($jabatanUser === $jabatanStep) {
-                $waitingStep->update(['is_read' => true]);
-            }
+
+        if ($waitingStep && $this->isUserAllowedForStep($waitingStep, $user)) {
+            $waitingStep->update(['is_read' => true]);
         }
     }
 }

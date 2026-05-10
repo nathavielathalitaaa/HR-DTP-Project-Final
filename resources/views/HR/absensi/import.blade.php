@@ -1,97 +1,533 @@
 @extends('layouts.master')
+
 @section('content')
+<style>
+    /* Base typography & layouts */
+    .import-page-wrapper {
+        font-family: 'Poppins', sans-serif;
+        color: #1a1a1a;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
     
-    <div class="group-data-[sidebar-size=lg]:ltr:md:ml-vertical-menu group-data-[sidebar-size=lg]:rtl:md:mr-vertical-menu group-data-[sidebar-size=md]:ltr:ml-vertical-menu-md group-data-[sidebar-size=md]:rtl:mr-vertical-menu-md group-data-[sidebar-size=sm]:ltr:ml-vertical-menu-sm group-data-[sidebar-size=sm]:rtl:mr-vertical-menu-sm pt-[calc(theme('spacing.header')_*_1)] pb-[calc(theme('spacing.header')_*_0.8)] px-4 group-data-[navbar=bordered]:pt-[calc(theme('spacing.header')_*_1.3)] group-data-[navbar=hidden]:pt-0 group-data-[layout=horizontal]:mx-auto group-data-[layout=horizontal]:max-w-screen-2xl group-data-[layout=horizontal]:px-0 group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:ltr:md:ml-auto group-data-[layout=horizontal]:group-data-[sidebar-size=lg]:rtl:md:mr-auto group-data-[layout=horizontal]:md:pt-[calc(theme('spacing.header')_*_1.6)] group-data-[layout=horizontal]:px-3 group-data-[layout=horizontal]:group-data-[navbar=hidden]:pt-[calc(theme('spacing.header')_*_0.9)]">
-        <div class="container-fluid group-data-[content=boxed]:max-w-boxed mx-auto">
-            <div class="flex flex-col gap-2 py-4 md:flex-row md:items-center print:hidden">
-                <div class="grow">
-                    <h5 class="text-16">Import Rekap Absensi dari Excel</h5>
-                </div>
-                <ul class="flex items-center gap-2 text-sm font-normal shrink-0">
-                    <li class="relative before:content-['\ea54'] before:font-remix ltr:before:-right-1 rtl:before:-left-1  before:absolute before:text-[18px] before:-top-[3px] ltr:pr-4 rtl:pl-4 before:text-slate-400 dark:text-zink-200">
-                        <a href="{{ route('hr/absensi/page') }}" class="text-slate-400 dark:text-zink-200">Absensi</a>
-                    </li>
-                    <li class="text-slate-700 dark:text-zink-100">
-                        Import
-                    </li>
-                </ul>
-            </div>
+    .import-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .import-header-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 4px 0;
+    }
+    .import-header-subtitle {
+        font-size: 14px;
+        color: #64748b;
+        margin: 0;
+    }
+    .import-breadcrumb {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0;
+        margin: 0;
+        font-size: 14px;
+    }
+    .import-breadcrumb a {
+        text-decoration: none;
+        color: #64748b;
+        transition: color 0.2s;
+    }
+    .import-breadcrumb a:hover {
+        color: #1a1a1a;
+    }
+    .import-breadcrumb li.active {
+        color: #1a1a1a;
+        font-weight: 600;
+    }
 
-            <div class="card">
-                <div class="card-body">
-                    <div class="mb-6">
-                        <h6 class="text-lg font-bold text-slate-900">Import Rekap Absensi</h6>
-                        <p class="text-sm text-slate-500 mt-1">Unggah file Excel dengan data rekap absensi karyawan untuk bulan tertentu</p>
-                    </div>
+    /* Card System */
+    .import-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(24px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        padding: 32px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        margin-bottom: 24px;
+    }
 
-                    @if ($errors->any())
-                        <div class="mb-4 p-4 rounded-lg bg-red-50 border border-red-200">
-                            <h6 class="text-sm font-bold text-red-700 mb-2">Terjadi Kesalahan:</h6>
-                            <ul class="text-sm text-red-600 list-disc list-inside">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+    /* Warning Card for Skipped Names */
+    .warning-card {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 24px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .warning-card-header {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .warning-card-icon {
+        color: #f59e0b;
+        margin-top: 2px;
+    }
+    .warning-card-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: #92400e;
+        margin: 0 0 6px 0;
+    }
+    .warning-card-text {
+        font-size: 14px;
+        color: #92400e;
+        margin: 0;
+    }
+    
+    .warning-table-wrapper {
+        overflow-x: auto;
+    }
+    .warning-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+    .warning-table th {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(253, 230, 138, 0.6);
+        font-size: 14px;
+        font-weight: 600;
+        color: #92400e;
+    }
+    .warning-table td {
+        padding: 16px;
+        border-bottom: 1px solid #fef3c7;
+        vertical-align: middle;
+    }
+    .warning-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .map-select-input {
+        width: 100%;
+        max-width: 300px;
+        background: #F0F4F2;
+        border: none;
+        border-radius: 9999px;
+        padding: 10px 16px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        color: #1a1a1a;
+        appearance: none;
+        outline: none;
+        transition: box-shadow 0.2s;
+    }
+    .map-select-input:focus {
+        box-shadow: 0 0 0 2px #80BB9B;
+    }
+    .btn-warning-sm {
+        background: #f59e0b;
+        color: white;
+        border: none;
+        border-radius: 9999px;
+        padding: 8px 16px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-warning-sm:hover {
+        background: #d97706;
+    }
 
-                    <form action="{{ route('hr/absensi/import/store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                        @csrf
+    /* Steps Grid */
+    .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+    @media (min-width: 768px) {
+        .steps-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    .step-item {
+        background: #F8FAFC;
+        border: 1px solid #F1F5F9;
+        border-radius: 16px;
+        padding: 20px;
+        position: relative;
+    }
+    .step-number {
+        position: absolute;
+        top: -12px;
+        left: -12px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #4F6560;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+        border: 4px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .step-title {
+        font-weight: 700;
+        font-size: 14px;
+        color: #1a1a1a;
+        margin: 8px 0 4px 0;
+    }
+    .step-desc {
+        font-size: 12px;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.5;
+    }
 
-                        <div class="p-4 rounded-lg bg-blue-50 border border-blue-200">
-                            <h6 class="text-sm font-bold text-blue-900 mb-2">Format Excel yang Diharapkan:</h6>
-                            <p class="text-sm text-blue-800 mb-3">Kolom harus berurutan sesuai berikut:</p>
-                            <div class="text-xs text-blue-700 font-mono bg-white p-2 rounded border border-blue-100">
-                                NO | NAMA | JABATAN | Sakit (dg srt) | Sakit (tanpa srt) | Ijin | Alfa | Hari kerja | Off
-                            </div>
-                            <p class="text-xs text-blue-700 mt-3">
-                                <strong>Catatan:</strong> Baris dengan NO yang berupa angka Romawi (I, II, III, dst) atau NaN akan dilewati (header).
-                                Baris dengan NAMA kosong juga akan dilewati.
-                            </p>
-                        </div>
+    /* Form Controls */
+    .form-group {
+        margin-bottom: 24px;
+    }
+    .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+    }
+    .form-label span.required {
+        color: #ef4444;
+    }
+    .hivi-input {
+        width: 100%;
+        max-width: 400px;
+        background: #F0F4F2;
+        border: none;
+        border-radius: 9999px;
+        padding: 14px 24px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        color: #1a1a1a;
+        outline: none;
+        transition: box-shadow 0.2s;
+        appearance: none;
+    }
+    .hivi-input:focus {
+        box-shadow: 0 0 0 2px #80BB9B;
+    }
 
-                        <div>
-                            <label class="inline-block mb-2 text-base font-medium text-slate-700">Pilih Periode / Bulan <span class="text-red-500">*</span></label>
-                            <select name="bulan" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-900 focus:outline-none focus:border-custom-500 focus:ring-1 focus:ring-custom-500 dark:border-zink-500 dark:text-zink-100 dark:bg-zink-700">
-                                <option value="">-- Pilih Bulan --</option>
-                                @foreach ($months as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            @error('bulan')
-                                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+    /* Drag & Drop Zone */
+    .drop-zone {
+        width: 100%;
+        height: 200px;
+        border: 2px dashed #cbd5e1;
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #F8FAFC;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        padding: 20px;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+        background: #F0F4F2;
+        border-color: #80BB9B;
+    }
+    .drop-zone-icon {
+        color: #94a3b8;
+        margin-bottom: 12px;
+        width: 48px;
+        height: 48px;
+    }
+    .drop-zone-text {
+        font-size: 14px;
+        font-weight: 600;
+        color: #475569;
+        margin: 0 0 4px 0;
+    }
+    .drop-zone-subtext {
+        font-size: 12px;
+        color: #94a3b8;
+        margin: 0;
+    }
+    .file-input-hidden {
+        display: none;
+    }
 
-                        <div>
-                            <label class="inline-block mb-2 text-base font-medium text-slate-700">Upload File Excel <span class="text-red-500">*</span></label>
-                            <div class="relative">
-                                <input type="file" name="file" accept=".xlsx,.xls" required 
-                                    class="block w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-900 cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-custom-50 file:text-custom-700 hover:file:bg-custom-100 focus:outline-none focus:border-custom-500 focus:ring-1 focus:ring-custom-500 dark:border-zink-500 dark:text-zink-100 dark:bg-zink-700 dark:file:bg-zink-600 dark:file:text-zink-100">
-                            </div>
-                            <p class="text-xs text-slate-500 mt-2">Format: .xlsx atau .xls | Ukuran maksimal: 5MB</p>
-                            @error('file')
-                                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+    /* File Display Badge */
+    .file-display {
+        display: none;
+        margin-top: 16px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #4F6560;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .file-display.active {
+        display: inline-flex;
+    }
 
-                        <div class="flex gap-3 pt-4">
-                            <button type="submit" class="inline-flex items-center gap-2 px-6 py-2 bg-custom-500 text-white rounded-lg font-semibold hover:bg-custom-600 transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="upload" class="w-4 h-4">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="17 8 12 3 7 8"></polyline>
-                                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                                </svg>
-                                Import Sekarang
-                            </button>
-                            <a href="{{ route('hr/absensi/page') }}" class="inline-flex items-center gap-2 px-6 py-2 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition-all">
-                                Kembali
-                            </a>
-                        </div>
-                    </form>
-                </div>
+    /* Actions */
+    .form-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #f1f5f9;
+        flex-wrap: wrap;
+    }
+    .btn-primary {
+        background: #4F6560;
+        color: white;
+        border: none;
+        border-radius: 9999px;
+        padding: 13px 28px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    .btn-primary:hover {
+        background: #3d504c;
+    }
+    .btn-primary:active {
+        transform: scale(0.98);
+    }
+    .btn-secondary {
+        background: white;
+        color: #1a1a1a;
+        border: 1px solid #E5E7EB;
+        border-radius: 9999px;
+        padding: 13px 28px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    .btn-secondary:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+    }
+</style>
+
+<div class="import-page-wrapper">
+    <div class="import-header print:hidden">
+        <div>
+            <h1 class="import-header-title">Import Attendance Recap from Excel</h1>
+            <p class="import-header-subtitle">Upload monthly recap file from fingerprint machine</p>
+        </div>
+        <ul class="import-breadcrumb">
+            <li><a href="{{ route('hr/absensi/page') }}">Attendance</a></li>
+            <li class="active">\ Import</li>
+        </ul>
+    </div>
+
+    @if(session('warning_skipped_names'))
+    <div class="warning-card">
+        <div class="warning-card-header">
+            <i data-lucide="alert-triangle" class="warning-card-icon"></i>
+            <div>
+                <h6 class="warning-card-title">Some Names Not Recognized</h6>
+                <p class="warning-card-text">The names below are in Excel but not yet linked to employee data. Please map them to the correct employee.</p>
             </div>
         </div>
+        <div class="warning-table-wrapper">
+            <table class="warning-table">
+                <thead>
+                    <tr>
+                        <th>Name in Excel (Fingerprint)</th>
+                        <th>Choose Employee</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(session('warning_skipped_names') as $index => $namaFinger)
+                    <tr id="map-row-{{ $index }}">
+                        <td style="font-weight: 600;">{{ $namaFinger }}</td>
+                        <td>
+                            <select class="map-select-input" id="map-select-{{ $index }}">
+                                <option value="">-- Choose Employee --</option>
+                                @foreach(\App\Models\User::orderBy('name')->get() as $u)
+                                    <option value="{{ $u->id }}">{{ $u->name }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td>
+                            <button type="button" onclick="saveMapping('{{ $index }}', '{{ addslashes($namaFinger) }}')" class="btn-warning-sm">
+                                Save & Map
+                            </button>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
+    @endif
+
+    <div class="import-card">
+        <div class="steps-grid">
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <h6 class="step-title">Select Month</h6>
+                <p class="step-desc">Determine the month period for the attendance recap to be imported.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <h6 class="step-title">Prepare Excel</h6>
+                <p class="step-desc">Ensure standard column format for fingerprint machine (Sheet "Summary").</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <h6 class="step-title">Upload File</h6>
+                <p class="step-desc">Upload .xlsx/.xls file. The system will automatically record it to the database.</p>
+            </div>
+        </div>
+
+        <form action="{{ route('hr/absensi/import/store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            
+            <div class="form-group">
+                <label class="form-label">Select Period / Month <span class="required">*</span></label>
+                <select name="bulan" required class="hivi-input">
+                    <option value="">-- Select Month --</option>
+                    @foreach ($months as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Upload Excel File <span class="required">*</span></label>
+                <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-upload').click()">
+                    <i data-lucide="upload-cloud" class="drop-zone-icon"></i>
+                    <p class="drop-zone-text">Click or Drag & Drop file here</p>
+                    <p class="drop-zone-subtext">Supported formats: .xls, .xlsx (Max 5MB)</p>
+                    <input type="file" name="file" id="file-upload" accept=".xlsx,.xls" required class="file-input-hidden" onchange="showFileName(this)">
+                    
+                    <div id="file-name-display" class="file-display">
+                        <i data-lucide="file" style="width:16px;height:16px;"></i> 
+                        <span id="file-name-text"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i data-lucide="upload" style="width:18px;height:18px;"></i> Start Import
+                </button>
+                <a href="{{ route('hr/absensi/page') }}" class="btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+function showFileName(input) {
+    const display = document.getElementById('file-name-display');
+    const text = document.getElementById('file-name-text');
+    if (input.files && input.files[0]) {
+        text.textContent = input.files[0].name;
+        display.classList.add('active');
+    } else {
+        display.classList.remove('active');
+    }
+}
+
+// Drag and drop logic
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-upload');
+
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+});
+function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+});
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+});
+dropZone.addEventListener('drop', (e) => {
+    let dt = e.dataTransfer;
+    let files = dt.files;
+    if(files.length) {
+        fileInput.files = files;
+        showFileName(fileInput);
+    }
+}, false);
+
+function saveMapping(index, namaFingerprint) {
+    const userId = document.getElementById('map-select-' + index).value;
+    if (!userId) {
+        alert('Select an employee first!');
+        return;
+    }
     
+    fetch('{{ route("hr/absensi/import/map") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            nama_fingerprint: namaFingerprint
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            document.getElementById('map-row-' + index).remove();
+        } else {
+            alert('Gagal: ' + res.message);
+        }
+    })
+    .catch(e => {
+        console.error(e);
+        alert('Network error occurred.');
+    });
+}
+</script>
+@endpush
 @endsection

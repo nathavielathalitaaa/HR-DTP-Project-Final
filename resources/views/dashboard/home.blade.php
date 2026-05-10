@@ -378,7 +378,7 @@
 
 <div>
 
-<p class="hv-welcome">Welcome in, {{ auth()->user()->name }}</p>
+<p class="hv-welcome">Welcome, {{ auth()->user()->name }}</p>
 
 {{-- ══════ hr ══════ --}}
 @if(auth()->user()->hasRole('hr'))
@@ -426,7 +426,7 @@
                 <p class="hv-recent-title">Recent Activity</p>
                 <a href="{{ route('surat.index') }}" class="hv-recent-viewall">View all</a>
             </div>
-            <p class="hv-recent-sub">Snapshot HR &amp; approval terbaru</p>
+            <p class="hv-recent-sub">Latest HR & approval snapshot</p>
             @php
                 $recentSurats = \App\Models\Surat::with('user')->orderBy('updated_at','desc')->limit(3)->get();
             @endphp
@@ -446,10 +446,10 @@
                         <p class="hv-recent-desc">
                             {{ ucfirst(str_replace('_',' ',$rs->jenis_surat)) }} &mdash;
                             @php echo match($rs->status){
-                                'approved_owner'=>'Disetujui penuh',
-                                'submitted'=>'Baru diajukan',
-                                'rejected'=>'Ditolak',
-                                'revised'=>'Perlu revisi',
+                                'approved_owner'=>'Fully Approved',
+                                'submitted'=>'Submitted',
+                                'rejected'=>'Rejected',
+                                'revised'=>'Needs Revision',
                                 default=>ucfirst($rs->status)
                             } @endphp<br>
                             <span style="opacity:.55;">{{ $rs->updated_at->diffForHumans() }}</span>
@@ -459,7 +459,7 @@
                 @endforeach
             </div>
             @else
-            <div class="hv-recent-empty">Belum ada aktivitas terbaru</div>
+            <div class="hv-recent-empty">No recent activity</div>
             @endif
         </div>
 
@@ -472,35 +472,11 @@
         <div class="hv-actions-card">
             <p class="hv-actions-title">Quick Actions</p>
             <div class="hv-actions-list">
-                <a href="{{ route('hr/employee/list') }}" class="hv-btn-primary">Tambah Karyawan</a>
-                <a href="{{ route('hr/leave/hr/page') }}" class="hv-btn-outline">Kelola Cuti</a>
-                <a href="{{ route('surat.index') }}" class="hv-btn-outline">Lihat Surat</a>
+                <a href="{{ route('hr/employee/list') }}" class="hv-btn-primary">Add Employee</a>
+                <a href="{{ route('surat.index') }}" class="hv-btn-outline">View Letters</a>
             </div>
         </div>
 
-        {{-- cuti menunggu --}}
-        <div class="hv-cuti-card">
-            <div class="hv-cuti-header">
-                <p class="hv-cuti-title">Cuti Menunggu</p>
-                <a href="{{ route('hr/leave/hr/page') }}" class="hv-cuti-viewall">Lihat semua</a>
-            </div>
-            @if(isset($cutiMenungguTerbaru) && $cutiMenungguTerbaru->count())
-            <div class="hv-cuti-list">
-                @foreach($cutiMenungguTerbaru as $cuti)
-                <div class="hv-cuti-item">
-                    <div class="hv-cuti-ava">{{ strtoupper(substr($cuti->employee_name ?? 'K',0,1)) }}</div>
-                    <div>
-                        <p class="hv-cuti-name">{{ $cuti->employee_name ?? '-' }}</p>
-                        <p class="hv-cuti-meta">{{ $cuti->leave_type }} &nbsp;·&nbsp; {{ $cuti->number_of_day }} hari</p>
-                    </div>
-                    <span class="hv-cuti-badge">Menunggu</span>
-                </div>
-                @endforeach
-            </div>
-            @else
-            <div class="hv-empty">Tidak ada cuti yang menunggu persetujuan</div>
-            @endif
-        </div>
 
     </div>{{-- /row2 --}}
 
@@ -508,79 +484,308 @@
 {{-- ══════ supervisor ══════ --}}
 @elseif(auth()->user()->hasRole('supervisor'))
 
-    <div class="hv-stats-row hv-stats-3">
-        <div class="hv-stat">
-            <p class="hv-stat-label">Total Karyawan</p>
-            <p class="hv-stat-num">{{ $totalKaryawan ?? 0 }}</p>
-            <div class="hv-stat-bottom"><svg class="hv-stat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
-        </div>
-        <div class="hv-stat">
-            <p class="hv-stat-label">Hadir Hari Ini</p>
-            <p class="hv-stat-num">{{ $hadirHariIni ?? 0 }}</p>
-            <div class="hv-stat-bottom"><svg class="hv-stat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-        </div>
-        <div class="hv-stat dark">
-            <p class="hv-stat-label">Surat Perlu Approval Saya</p>
-            <p class="hv-stat-num">{{ $suratMenungguCount ?? 0 }}</p>
-            <div class="hv-stat-bottom"><svg class="hv-stat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
-        </div>
-    </div>
+    {{-- row 1 --}}
+    <div class="hv-row1">
 
-    <div class="hv-full-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-            <p class="hv-full-title" style="margin:0;">Surat Menunggu Approval Saya</p>
-            <a href="{{ route('surat.index') }}" class="hv-list-link">Lihat semua</a>
-        </div>
-        @forelse($suratMenungguList ?? [] as $surat)
-        <div class="hv-list-item">
-            <div class="hv-list-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
-            <div style="flex:1;">
-                <p class="hv-list-name">{{ $surat->user?->name ?? '-' }}</p>
-                <p class="hv-list-meta">{{ ucfirst(str_replace('_',' ',$surat->jenis_surat)) }} · {{ $surat->created_at->format('d M Y') }}</p>
+        {{-- foto profil --}}
+        <div class="hv-photo-card">
+            @if(auth()->user()->avatar)
+                <img src="{{ URL::to('assets/images/user/'.auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
+            @endif
+            <div class="hv-photo-overlay">
+                <p class="hv-photo-name">{{ auth()->user()->name }}</p>
+                <p class="hv-photo-role">{{ $userRoleName }}</p>
             </div>
-            <a href="{{ route('surat.show', $surat->id) }}" class="hv-list-link">Review</a>
         </div>
-        @empty
-        <div class="hv-empty">Tidak ada surat yang menunggu approval Anda</div>
-        @endforelse
-    </div>
+
+        {{-- total karyawan --}}
+        <div class="hv-stat">
+            <p class="hv-stat-label">Total Active Employees</p>
+            <p class="hv-stat-num">{{ $totalKaryawan ?? 0 }}</p>
+            <div class="hv-stat-bottom">
+                <svg class="hv-stat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </div>
+        </div>
+
+        {{-- surat menunggu --}}
+        <div class="hv-stat dark">
+            <p class="hv-stat-label">Letters Need Approval</p>
+            <p class="hv-stat-num">{{ $suratMenungguCount ?? 0 }}</p>
+            <div class="hv-stat-bottom">
+                <svg class="hv-stat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <a href="{{ route('surat.index') }}" class="hv-list-link" style="font-size:12px;text-decoration:underline;text-underline-offset:2px;color:rgba(255,255,255,0.8);">View letters</a>
+            </div>
+        </div>
+
+        {{-- recent activity --}}
+        <div class="hv-recent">
+            <div class="hv-recent-header">
+                <p class="hv-recent-title">Needs Review</p>
+                <a href="{{ route('surat.index') }}" class="hv-recent-viewall">View all</a>
+            </div>
+            <p class="hv-recent-sub">Letters waiting for your approval</p>
+            @if(isset($suratMenungguList) && $suratMenungguList->count())
+            <div class="hv-recent-list">
+                @foreach($suratMenungguList->take(3) as $rs)
+                <div class="hv-recent-item">
+                    <div class="hv-recent-ava">
+                        @if($rs->user?->avatar)
+                            <img src="{{ URL::to('assets/images/user/'.$rs->user->avatar) }}" alt="">
+                        @else
+                            {{ strtoupper(substr($rs->user?->name ?? 'K', 0, 1)) }}
+                        @endif
+                    </div>
+                    <div>
+                        <p class="hv-recent-name">{{ $rs->user?->name ?? '-' }}</p>
+                        <p class="hv-recent-desc">
+                            {{ ucfirst(str_replace('_',' ',$rs->jenis_surat)) }}<br>
+                            <span style="opacity:.55;">{{ $rs->created_at->diffForHumans() }}</span>
+                        </p>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <div class="hv-recent-empty">No letters waiting</div>
+            @endif
+        </div>
+
+    </div>{{-- /row1 --}}
+
+    {{-- row 2 --}}
+    <div class="hv-row2">
+
+        {{-- quick actions --}}
+        <div class="hv-actions-card">
+            <p class="hv-actions-title">Quick Actions</p>
+            <div class="hv-actions-list">
+                <a href="{{ route('surat.index') }}" class="hv-btn-primary">Review Letters</a>
+                <a href="{{ route('hr/attendance/main/page') }}" class="hv-btn-outline">Manage Attendance</a>
+                <a href="{{ route('hr/employee/list') }}" class="hv-btn-outline">View Employees</a>
+            </div>
+        </div>
+
+
+    </div>{{-- /row2 --}}
+
+
+{{-- ══════ head_of_department ══════ --}}
+@elseif(auth()->user()->hasRole('head_of_department'))
+
+    {{-- row 1 --}}
+    <div class="hv-row1">
+
+        {{-- foto profil --}}
+        <div class="hv-photo-card">
+            @if(auth()->user()->avatar)
+                <img src="{{ URL::to('assets/images/user/'.auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
+            @endif
+            <div class="hv-photo-overlay">
+                <p class="hv-photo-name">{{ auth()->user()->name }}</p>
+                <p class="hv-photo-role">{{ $userRoleName }}</p>
+            </div>
+        </div>
+
+        {{-- total karyawan --}}
+        <div class="hv-stat">
+            <p class="hv-stat-label">Total Active Employees</p>
+            <p class="hv-stat-num">{{ $totalKaryawan ?? 0 }}</p>
+            <div class="hv-stat-bottom">
+                <svg class="hv-stat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </div>
+        </div>
+
+        {{-- surat menunggu HOD --}}
+        <div class="hv-stat dark">
+            <p class="hv-stat-label">Letters Need HOD Approval</p>
+            <p class="hv-stat-num">{{ $suratMenungguCount ?? 0 }}</p>
+            <div class="hv-stat-bottom">
+                <svg class="hv-stat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <a href="{{ route('surat.index') }}" class="hv-list-link" style="font-size:12px;text-decoration:underline;text-underline-offset:2px;color:rgba(255,255,255,0.8);">View letters</a>
+            </div>
+        </div>
+
+        {{-- recent activity --}}
+        <div class="hv-recent">
+            <div class="hv-recent-header">
+                <p class="hv-recent-title">Needs Review</p>
+                <a href="{{ route('surat.index') }}" class="hv-recent-viewall">View all</a>
+            </div>
+            <p class="hv-recent-sub">Letters waiting for HOD approval</p>
+            @if(isset($suratMenungguList) && $suratMenungguList->count())
+            <div class="hv-recent-list">
+                @foreach($suratMenungguList->take(3) as $rs)
+                <div class="hv-recent-item">
+                    <div class="hv-recent-ava">
+                        @if($rs->user?->avatar)
+                            <img src="{{ URL::to('assets/images/user/'.$rs->user->avatar) }}" alt="">
+                        @else
+                            {{ strtoupper(substr($rs->user?->name ?? 'K', 0, 1)) }}
+                        @endif
+                    </div>
+                    <div>
+                        <p class="hv-recent-name">{{ $rs->user?->name ?? '-' }}</p>
+                        <p class="hv-recent-desc">
+                            {{ ucfirst(str_replace('_',' ',$rs->jenis_surat)) }}<br>
+                            <span style="opacity:.55;">{{ $rs->created_at->diffForHumans() }}</span>
+                        </p>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <div class="hv-recent-empty">No letters waiting</div>
+            @endif
+        </div>
+
+    </div>{{-- /row1 --}}
+
+    {{-- row 2 --}}
+    <div class="hv-row2">
+
+        {{-- quick actions --}}
+        <div class="hv-actions-card">
+            <p class="hv-actions-title">Quick Actions</p>
+            <div class="hv-actions-list">
+                <a href="{{ route('surat.index') }}" class="hv-btn-primary">Approve Letters</a>
+                <a href="{{ route('hr/employee/list') }}" class="hv-btn-outline">View Employees</a>
+                <a href="{{ route('hr/attendance/main/page') }}" class="hv-btn-outline">Manage Attendance</a>
+            </div>
+        </div>
+
+
+    </div>{{-- /row2 --}}
 
 
 {{-- ══════ staff ══════ --}}
 @elseif(auth()->user()->hasRole('staff'))
 
-    <div class="hv-stats-row hv-stats-2">
-        <div class="hv-stat">
-            <p class="hv-stat-label">Surat Diajukan</p>
-            <p class="hv-stat-num">{{ $suratStaffDiajukan ?? 0 }}</p>
-            <div class="hv-stat-bottom"><svg class="hv-stat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
-        </div>
-        <div class="hv-stat dark">
-            <p class="hv-stat-label">Surat Disetujui</p>
-            <p class="hv-stat-num">{{ $suratStaffSelesai ?? 0 }}</p>
-            <div class="hv-stat-bottom"><svg class="hv-stat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-        </div>
-    </div>
+    {{-- row 1 --}}
+    <div class="hv-row1">
 
-    <div class="hv-full-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-            <p class="hv-full-title" style="margin:0;">Surat Saya</p>
-            <a href="{{ route('surat.create') }}" class="hv-btn-primary" style="width:auto;padding:8px 20px;font-size:12px;">+ Buat Surat Baru</a>
-        </div>
-        @forelse($suratStaff ?? [] as $surat)
-        <div class="hv-list-item">
-            <div class="hv-list-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
-            <div style="flex:1;">
-                <p class="hv-list-name">{{ ucfirst(str_replace('_',' ',$surat->jenis_surat)) }}</p>
-                <p class="hv-list-meta">{{ Str::limit($surat->perihal, 60) }} · {{ $surat->created_at->format('d M Y') }}</p>
+        {{-- foto profil --}}
+        <div class="hv-photo-card">
+            @if(auth()->user()->avatar)
+                <img src="{{ URL::to('assets/images/user/'.auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
+            @endif
+            <div class="hv-photo-overlay">
+                <p class="hv-photo-name">{{ auth()->user()->name }}</p>
+                <p class="hv-photo-role">{{ $userRoleName }}</p>
             </div>
-            @php $b=match($surat->status){'approved_owner'=>['hv-badge-green','Disetujui'],'submitted'=>['hv-badge-blue','Diajukan'],'rejected'=>['hv-badge-red','Ditolak'],'revised'=>['hv-badge-amber','Revisi'],default=>['hv-badge-gray',ucfirst($surat->status)]}; @endphp
-            <span class="hv-badge {{ $b[0] }}">{{ $b[1] }}</span>
         </div>
-        @empty
-        <div class="hv-empty">Belum ada surat yang diajukan</div>
-        @endforelse
-    </div>
+
+        {{-- surat diajukan --}}
+        <div class="hv-stat">
+            <p class="hv-stat-label">Letters Submitted</p>
+            <p class="hv-stat-num">{{ $suratStaffDiajukan ?? 0 }}</p>
+            <div class="hv-stat-bottom">
+                <svg class="hv-stat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <a href="{{ route('surat.index') }}" class="hv-list-link" style="font-size:12px;text-decoration:underline;text-underline-offset:2px;color:#1A2B24;">View status</a>
+            </div>
+        </div>
+
+        {{-- surat disetujui --}}
+        <div class="hv-stat dark">
+            <p class="hv-stat-label">Letters Approved</p>
+            <p class="hv-stat-num">{{ $suratStaffSelesai ?? 0 }}</p>
+            <div class="hv-stat-bottom">
+                <svg class="hv-stat-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+        </div>
+
+        {{-- surat terbaru saya --}}
+        <div class="hv-recent">
+            <div class="hv-recent-header">
+                <p class="hv-recent-title">My Latest Letters</p>
+                <a href="{{ route('surat.index') }}" class="hv-recent-viewall">View all</a>
+            </div>
+            <p class="hv-recent-sub">History of your letter submissions</p>
+            @php
+                $recentSuratStaff = isset($suratStaff) ? $suratStaff->take(3) : collect();
+            @endphp
+            @if($recentSuratStaff->count())
+            <div class="hv-recent-list">
+                @foreach($recentSuratStaff as $rs)
+                <div class="hv-recent-item">
+                    <div class="hv-recent-ava">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <div>
+                        <p class="hv-recent-name">{{ ucfirst(str_replace('_',' ',$rs->jenis_surat)) }}</p>
+                        <p class="hv-recent-desc">
+                            @php echo match($rs->status){
+                                'approved_owner'=>'Fully Approved',
+                                'submitted'=>'Submitted',
+                                'rejected'=>'Rejected',
+                                'revised'=>'Needs Revision',
+                                default=>ucfirst($rs->status)
+                            } @endphp<br>
+                            <span style="opacity:.55;">{{ $rs->created_at->diffForHumans() }}</span>
+                        </p>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <div class="hv-recent-empty">No recent letters</div>
+            @endif
+        </div>
+
+    </div>{{-- /row1 --}}
+
+    {{-- row 2 --}}
+    <div class="hv-row2">
+
+        {{-- quick actions --}}
+        <div class="hv-actions-card">
+            <p class="hv-actions-title">Quick Actions</p>
+            <div class="hv-actions-list">
+                <a href="{{ route('surat.create') }}" class="hv-btn-primary">Create New Letter</a>
+                <a href="{{ route('surat.create') }}" class="hv-btn-outline">Apply for Leave</a>
+                <a href="{{ route('surat.index') }}" class="hv-btn-outline">My Letter List</a>
+            </div>
+        </div>
+
+        {{-- daftar surat lengkap --}}
+        <div class="hv-cuti-card">
+            <div class="hv-cuti-header">
+                <p class="hv-cuti-title">My Letter List</p>
+                <a href="{{ route('surat.index') }}" class="hv-cuti-viewall">View all</a>
+            </div>
+            @if(isset($suratStaff) && $suratStaff->count())
+            <div class="hv-cuti-list">
+                @foreach($suratStaff->take(4) as $surat)
+                <div class="hv-cuti-item">
+                    <div class="hv-cuti-ava" style="background:#E8F5EE;color:#4F6560;">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <div>
+                        <p class="hv-cuti-name">{{ ucfirst(str_replace('_',' ',$surat->jenis_surat)) }}</p>
+                        <p class="hv-cuti-meta">{{ Str::limit($surat->perihal, 40) }} &nbsp;·&nbsp; {{ $surat->created_at->format('d M Y') }}</p>
+                    </div>
+                    @php $b=match($surat->status){'approved_owner'=>['hv-badge-green','Approved'],'submitted'=>['hv-badge-blue','Submitted'],'rejected'=>['hv-badge-red','Rejected'],'revised'=>['hv-badge-amber','Revision'],default=>['hv-badge-gray',ucfirst($surat->status)]}; @endphp
+                    <span class="hv-badge {{ $b[0] }}" style="margin-left:auto;">{{ $b[1] }}</span>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <div class="hv-empty">No letters submitted yet</div>
+            @endif
+        </div>
+
+    </div>{{-- /row2 --}}
 
 @endif
 

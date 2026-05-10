@@ -22,7 +22,8 @@ class StoreSuratRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'jenis_surat' => 'required|string|in:resign,permohonan,surat_tugas,rekomendasi,izin,lainnya',
+            'surat_type_id' => 'required|exists:surat_types,id',
+            'jenis_surat' => 'nullable|string',
             'perihal' => 'required|string',
             'file_pdf' => 'required|file|mimes:pdf|max:5120',
             'ttd_coordinates' => 'nullable|string',

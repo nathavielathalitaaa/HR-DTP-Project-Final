@@ -3,136 +3,205 @@
 <head>
 <meta charset="utf-8">
 <style>
-  body { font-family: {{ $settings['font_family'] }}, sans-serif; font-size: 12px; color: #1a1a1a; margin: 0; padding: 30px; }
-  .header { text-align: center; border-bottom: 2px solid {{ $settings['accent_color'] }}; padding-bottom: 16px; margin-bottom: 24px; }
-  .header h2 { font-size: 16px; margin: 0 0 4px; color: {{ $settings['accent_color'] }}; }
-  .header p { margin: 2px 0; font-size: 11px; color: #555; }
-  .logo-box { margin-bottom: 12px; }
-  .logo-box img { max-height: 50px; }
-  .info-grid { display: table; width: 100%; margin-bottom: 24px; }
-  .info-row { display: table-row; }
-  .info-label { display: table-cell; width: 140px; font-weight: bold; padding: 3px 0; color: #555; font-size: 11px; }
-  .info-value { display: table-cell; padding: 3px 0; font-size: 11px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: #1a1a1a;
+    padding: 32px;
+    background: #fff;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    border-bottom: 2px solid #4F6560;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  .header h2 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #4F6560;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .header p { font-size: 12px; color: #555; }
+
+  /* Info grid */
+  .info-table { width: 100%; margin-bottom: 24px; border-collapse: collapse; }
+  .info-table td { padding: 4px 0; font-size: 12px; }
+  .info-table td:first-child { width: 160px; color: #666; font-weight: bold; }
+
+  /* TTD Section */
   .ttd-section { margin-top: 32px; }
-  .ttd-section h3 { font-size: 12px; font-weight: bold; color: {{ $settings['accent_color'] }}; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 16px; }
-  .ttd-grid { display: table; width: 100%; table-layout: fixed; }
-
-  .ttd-col {
-      display: table-cell;
-      text-align: center;
-      vertical-align: top;
-      padding: 0 6px;
-      border-right: 1px solid #f0f0f0;
+  .ttd-section-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #4F6560;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-  .ttd-col:last-child { border-right: none; }
 
-  .ttd-label { font-size: 10px; font-weight: bold; color: #444; margin-bottom: 8px; }
+  /* TTD columns — gunakan tabel agar DomPDF render dengan benar */
+  .ttd-table { width: 100%; border-collapse: collapse; }
+  .ttd-table td {
+    text-align: center;
+    vertical-align: top;
+    padding: 0 12px;
+    border-right: 1px solid #f0f0f0;
+  }
+  .ttd-table td:last-child { border-right: none; }
 
-  /* Kotak TTD — border solid, display:table agar DomPDF render center */
+  .ttd-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  /* Kotak TTD */
   .ttd-box {
-      width: 130px; height: 82px;
-      border: 1.5px solid #9ca3af;
-      border-radius: 4px;
-      display: table;
-      margin: 0 auto 8px auto;
+    width: 100%;
+    height: 80px;
+    border: 1px dashed #ccc;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #fafafa;
   }
-  .ttd-box-inner {
-      display: table-cell;
-      vertical-align: middle;
-      text-align: center;
+  .ttd-box img {
+    max-width: 100%;
+    max-height: 75px;
+    object-fit: contain;
   }
-  .ttd-box-inner img { max-width: 120px; max-height: 72px; }
-
-  /* Kotak kosong jika belum TTD */
   .ttd-empty {
-      width: 130px; height: 82px;
-      border: 1.5px dashed #d1d5db;
-      border-radius: 4px;
-      display: table;
-      margin: 0 auto 8px auto;
-  }
-  .ttd-empty-inner {
-      display: table-cell;
-      vertical-align: middle;
-      text-align: center;
-      font-size: 9px;
-      color: #9ca3af;
+    width: 100%;
+    height: 80px;
+    border: 1px dashed #ddd;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: #f9f9f9;
   }
 
-  .ttd-name { font-size: 10px; font-weight: bold; border-top: 1px solid #333; padding-top: 4px; margin-top: 4px; }
-  .ttd-date { font-size: 9px; color: #888; margin-top: 2px; }
-  .ttd-note { font-size: 9px; color: #888; margin-top: 2px; font-style: italic; }
-  .footer { margin-top: 40px; font-size: 9px; color: #aaa; text-align: center; border-top: 1px solid #f0f0f0; padding-top: 12px; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; background: #dcfce7; color: #166534; }
+  .ttd-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: #1a1a1a;
+    border-top: 1px solid #333;
+    padding-top: 4px;
+    margin-top: 4px;
+  }
+  .ttd-date { font-size: 10px; color: #888; margin-top: 3px; }
+  .ttd-note {
+    font-size: 10px;
+    font-style: italic;
+    color: #666;
+    margin-top: 4px;
+  }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    background: #d1ead9;
+    color: #1a5c33;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 40px;
+    font-size: 10px;
+    color: #aaa;
+    text-align: center;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 12px;
+  }
 </style>
 </head>
 <body>
 
+{{-- Header --}}
 <div class="header">
-  @if($logo_base64)
-    <div class="logo-box">
-      <img src="{{ $logo_base64 }}" alt="Logo">
-    </div>
-  @endif
-  <h2>LEMBAR PERSETUJUAN DOKUMEN</h2>
-  <p><strong>{{ $surat->nomor_surat }}</strong></p>
-  <p>{{ $settings['company_name'] }}</p>
+  <h2>Lembar Persetujuan Dokumen</h2>
+  <p>{{ $settings['company_name'] ?? 'HR Sinergi Hotel & Villa' }}</p>
 </div>
 
-<div class="info-grid">
-  <div class="info-row">
-    <div class="info-label">Jenis Dokumen</div>
-    <div class="info-value">: {{ ucfirst(str_replace('_', ' ', $surat->jenis_surat)) }}</div>
-  </div>
-  <div class="info-row">
-    <div class="info-label">Perihal</div>
-    <div class="info-value">: {{ $surat->perihal }}</div>
-  </div>
-  <div class="info-row">
-    <div class="info-label">Pembuat</div>
-    <div class="info-value">: {{ $surat->user->name ?? '-' }}</div>
-  </div>
-  <div class="info-row">
-    <div class="info-label">Tanggal Dibuat</div>
-    <div class="info-value">: {{ $surat->created_at->format('d M Y') }}</div>
-  </div>
-  <div class="info-row">
-    <div class="info-label">Status</div>
-    <div class="info-value">: <span class="badge">Disetujui Penuh</span></div>
-  </div>
-</div>
+{{-- Info Surat --}}
+<table class="info-table">
+  <tr>
+    <td>Nomor Surat</td>
+    <td>: <strong>{{ $surat->nomor_surat }}</strong></td>
+  </tr>
+  <tr>
+    <td>Jenis Dokumen</td>
+    <td>: {{ ucfirst(str_replace('_', ' ', $surat->jenis_surat)) }}</td>
+  </tr>
+  <tr>
+    <td>Perihal</td>
+    <td>: {{ $surat->perihal }}</td>
+  </tr>
+  <tr>
+    <td>Pembuat</td>
+    <td>: {{ $surat->user->name ?? '-' }}</td>
+  </tr>
+  <tr>
+    <td>Tanggal Dibuat</td>
+    <td>: {{ $surat->created_at->format('d M Y') }}</td>
+  </tr>
+  <tr>
+    <td>Status</td>
+    <td>: <span class="badge">Disetujui Penuh</span></td>
+  </tr>
+</table>
 
+{{-- TTD Section --}}
 <div class="ttd-section">
-  <h3>TANDA TANGAN PERSETUJUAN</h3>
-  <div class="ttd-grid">
-    @foreach($steps as $step)
-    <div class="ttd-col">
+  <div class="ttd-section-title">Tanda Tangan Persetujuan</div>
+
+  {{-- Gunakan tabel HTML biasa agar DomPDF render dengan benar --}}
+  <table class="ttd-table">
+    <tr>
+      @foreach($steps as $step)
+      <td style="width: {{ count($steps) > 0 ? round(100 / count($steps)) : 100 }}%;">
         <div class="ttd-label">{{ $step['label'] }}</div>
 
-        @if($step['ttd_base64'])
-            <div class="ttd-box">
-                <div class="ttd-box-inner">
-                    <img src="{{ $step['ttd_base64'] }}" alt="TTD">
-                </div>
-            </div>
+        {{-- Kotak TTD --}}
+        @if(!empty($step['ttd_base64']))
+          <div class="ttd-box">
+            <img src="{{ $step['ttd_base64'] }}" alt="TTD {{ $step['label'] }}">
+          </div>
         @else
-            <div class="ttd-empty">
-                <div class="ttd-empty-inner">Belum TTD</div>
-            </div>
+          <div class="ttd-empty"></div>
         @endif
 
         <div class="ttd-name">{{ $step['name'] }}</div>
         <div class="ttd-date">{{ $step['actioned_at'] ?? '-' }}</div>
-        @if($step['catatan'])
-            <div class="ttd-note">"{{ $step['catatan'] }}"</div>
+
+        @if(!empty($step['catatan']))
+          <div class="ttd-note">"{{ $step['catatan'] }}"</div>
         @endif
-    </div>
-    @endforeach
-  </div>
+      </td>
+      @endforeach
+    </tr>
+  </table>
 </div>
 
+{{-- Footer --}}
 <div class="footer">
-  {{ $settings['footer_text'] }} &bull; {{ now()->format('d M Y H:i') }}
+  {{ $settings['footer_text'] ?? 'Dokumen ini digenerate otomatis oleh sistem HR.' }}
+  &bull; {{ now()->format('d M Y H:i') }}
 </div>
 
 </body>

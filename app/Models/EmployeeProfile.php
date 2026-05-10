@@ -18,6 +18,7 @@ class EmployeeProfile extends Model
         'nik',
         'no_kk',
         'npwp',
+        'nama_fingerprint',
         'bpjs_kesehatan',
         'bpjs_ketenagakerjaan',
         // Kepegawaian

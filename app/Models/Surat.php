@@ -13,6 +13,7 @@ class Surat extends Model
 
     protected $fillable = [
         'user_id',
+        'surat_type_id',
         'nomor_surat',
         'jenis_surat',
         'perihal',
@@ -40,6 +41,12 @@ class Surat extends Model
         return $this->belongsTo(User::class);
     }
 
+    // ── Relasi ke Jenis Surat ─────────────────────────
+    public function suratType()
+    {
+        return $this->belongsTo(SuratType::class);
+    }
+
     // ── Relasi ke DocumentApproval (log 4 step) ────────
     public function approvals()
     {
@@ -62,22 +69,9 @@ class Surat extends Model
     // ── Helper: cek apakah bisa diedit (oleh pembuat) ──
     public function canBeEdited(): bool
     {
-        // Status revised selalu bisa diedit (resubmit)
-        if ($this->status === 'revised') {
-            return true;
-        }
-
-        // Selain submitted, tidak bisa diedit
-        if ($this->status !== 'submitted') {
-            return false;
-        }
-
-        // Jika submitted, pastikan belum ada approval yang diproses (approved/rejected)
-        $hasProcessedApproval = $this->approvals()
-            ->whereIn('status', ['approved', 'rejected'])
-            ->exists();
-
-        return !$hasProcessedApproval;
+        // Hanya bisa diedit jika status 'revised' (setelah ditolak/perlu revisi)
+        // Status 'submitted' tidak bisa diedit lagi
+        return $this->status === 'revised';
     }
 
     // ── Helper: cek apakah bisa dihapus (oleh pembuat) ──
