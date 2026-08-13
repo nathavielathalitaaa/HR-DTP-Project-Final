@@ -97,34 +97,5 @@ class DataAwalSeeder extends Seeder
             'model_type' => 'App\\Models\\User',
             'model_id' => $staffUser,
         ]);
-
-        // buat data shift awal
-        DB::table('shifts')->insert([
-            [
-                'nama_shift' => 'shift pagi',
-                'jam_masuk' => '08:00:00',
-                'jam_keluar' => '17:00:00',
-                'toleransi_menit' => 15,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'nama_shift' => 'shift siang',
-                'jam_masuk' => '14:00:00',
-                'jam_keluar' => '22:00:00',
-                'toleransi_menit' => 15,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'nama_shift' => 'shift malam',
-                'jam_masuk' => '22:00:00',
-                'jam_keluar' => '06:00:00',
-                'toleransi_menit' => 15,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
-
     }
 }

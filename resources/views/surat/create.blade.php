@@ -100,7 +100,7 @@
                                 style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e5e7eb; font-size: 14px; background: #ffffff; outline: none; transition: all 0.2s;"
                                 onfocus="this.style.borderColor='#80BB9B'; this.style.boxShadow='0 0 0 2px rgba(128,187,155,0.2)'"
                                 onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
-                            <p class="text-xs text-gray-400 mt-2">Format: PDF, Ukuran maksimal: 5MB</p>
+                            <p class="text-xs text-gray-400 mt-2">Format: PDF, Ukuran maksimal: 500KB</p>
                             @error('file_pdf')
                                 <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
                             @enderror

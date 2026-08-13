@@ -69,7 +69,7 @@
                     class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm transition-all bg-white
                            file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold
                            file:bg-[#80BB9B]/20 file:text-[#4F6560] hover:file:bg-[#80BB9B]/30">
-                <p class="text-xs text-gray-400 mt-2">Format: PDF, Ukuran maksimal: 5MB</p>
+                <p class="text-xs text-gray-400 mt-2">Format: PDF, Ukuran maksimal: 500KB</p>
                 @error('file_pdf')
                     <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
                 @enderror
