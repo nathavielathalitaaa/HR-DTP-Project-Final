@@ -1,25 +1,11 @@
 FROM php:8.2-fpm
 
-# Install php extension installer
 COPY --from=mlocati/php-extension-installer /usr/local/bin/install-php-extensions /usr/local/bin/
 
-# Install required PHP extensions including gd, pdo_mysql, and zip
-RUN install-php-extensions bcmath ctype curl dom fileinfo filter gd hash intl mbstring openssl pcre pdo pdo_mysql session tokenizer xml zip
-
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN install-php-extensions ctype curl dom fileinfo filter gd hash mbstring openssl pcre pdo session tokenizer xml
 
 WORKDIR /var/www
 
-# Copy application files
 COPY . /var/www
 
-# Install Laravel dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Set proper directory permissions for Laravel
-RUN chmod -R 775 storage bootstrap/cache
-
-EXPOSE 8080
-
-CMD ["sh", "-c", "php artisan storage:link || true; php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
+CMD ["php-fpm"]
