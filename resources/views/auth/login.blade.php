@@ -348,7 +348,7 @@
     {{-- PANEL KIRI --}}
 <div class="left-panel">
     <div class="left-brand">
-        <img src="{{ URL::to('assets/images/Logo Sinergi putih.png') }}" 
+        <img src="{{ asset('assets/images/Logo Sinergi putih.png') }}" 
              style="width: 180px; height: auto; margin-bottom: 24px; display: block; margin-left: auto; margin-right: auto;">
         <h1>HR <em>Sinergi</em><br>Hotel & Villa</h1>
         <p>Sistem manajemen SDM terpadu untuk operasional hotel yang lebih efisien dan terstruktur.</p>

@@ -412,7 +412,7 @@
         {{-- foto profil --}}
         <div class="hv-photo-card">
             @if(auth()->user()->avatar)
-                <img src="{{ URL::to('assets/images/user/'.auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
+                <img src="{{ asset('assets/images/user/'.auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
             @else
                 <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=E8F5EE&color=1A2B24&size=200" alt="{{ auth()->user()->name }}">
             @endif
@@ -460,7 +460,7 @@
                 <div class="hv-recent-item">
                     <div class="hv-recent-ava">
                         @if($log->user?->avatar)
-                            <img src="{{ URL::to('assets/images/user/'.$log->user->avatar) }}" alt="" style="width: 100%; height: 100%; border-radius: 50%;">
+                            <img src="{{ asset('assets/images/user/'.$log->user->avatar) }}" alt="" style="width: 100%; height: 100%; border-radius: 50%;">
                         @else
                             {{ strtoupper(substr($log->user?->name ?? 'S', 0, 1)) }}
                         @endif
@@ -507,7 +507,7 @@
         {{-- foto profil --}}
         <div class="hv-photo-card">
             @if(auth()->user()->avatar)
-                <img src="{{ URL::to('assets/images/user/'.auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
+                <img src="{{ asset('assets/images/user/'.auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
             @endif
             <div class="hv-photo-overlay">
                 <p class="hv-photo-name">{{ auth()->user()->name }}</p>
@@ -551,7 +551,7 @@
                 <div class="hv-recent-item">
                     <div class="hv-recent-ava">
                         @if($rs->user?->avatar)
-                            <img src="{{ URL::to('assets/images/user/'.$rs->user->avatar) }}" alt="">
+                            <img src="{{ asset('assets/images/user/'.$rs->user->avatar) }}" alt="">
                         @else
                             {{ strtoupper(substr($rs->user?->name ?? 'K', 0, 1)) }}
                         @endif
@@ -599,7 +599,7 @@
         {{-- foto profil --}}
         <div class="hv-photo-card">
             @if(auth()->user()->avatar)
-                <img src="{{ URL::to('assets/images/user/'.auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
+                <img src="{{ asset('assets/images/user/'.auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
             @endif
             <div class="hv-photo-overlay">
                 <p class="hv-photo-name">{{ auth()->user()->name }}</p>
@@ -643,7 +643,7 @@
                 <div class="hv-recent-item">
                     <div class="hv-recent-ava">
                         @if($rs->user?->avatar)
-                            <img src="{{ URL::to('assets/images/user/'.$rs->user->avatar) }}" alt="">
+                            <img src="{{ asset('assets/images/user/'.$rs->user->avatar) }}" alt="">
                         @else
                             {{ strtoupper(substr($rs->user?->name ?? 'K', 0, 1)) }}
                         @endif
@@ -690,7 +690,7 @@
         {{-- foto profil --}}
         <div class="hv-photo-card">
             @if(auth()->user()->avatar)
-                <img src="{{ URL::to('assets/images/user/'.auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
+                <img src="{{ asset('assets/images/user/'.auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
             @else
                 <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=E8F5EE&color=1A2B24&size=200" alt="{{ auth()->user()->name }}">
             @endif

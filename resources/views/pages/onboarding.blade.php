@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Onboarding — HR Sinergi Hotel & Villa</title>
 
-    <link rel="shortcut icon" href="{{ URL::to('assets/images/favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -430,7 +430,7 @@
 {{-- PANEL KIRI --}}
 <div class="left-panel">
     <div class="left-brand">
-        <img src="{{ URL::to('assets/images/Logo Sinergi putih.png') }}" alt="Sinergi">
+        <img src="{{ asset('assets/images/Logo Sinergi putih.png') }}" alt="Sinergi">
         <h1>HR <em>Sinergi</em><br>Hotel & Villa</h1>
         <p>Sistem manajemen SDM terpadu untuk operasional hotel yang lebih efisien dan terstruktur.</p>
     </div>

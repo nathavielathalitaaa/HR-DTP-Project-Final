@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>403 — Akses Ditolak · SinergiHRS</title>
-    <link rel="shortcut icon" href="{{ URL::to('assets/images/favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
@@ -87,7 +87,7 @@
 </head>
 <body>
     <div class="card">
-        <img src="{{ URL::to('assets/images/logo-sinergi.png') }}" alt="Sinergi Hotel & Vila" class="logo">
+        <img src="{{ asset('assets/images/logo-sinergi.png') }}" alt="Sinergi Hotel & Vila" class="logo">
         <div class="error-num">4<span>0</span>3</div>
         <div class="divider"></div>
         <h1 class="error-title">Akses Ditolak</h1>

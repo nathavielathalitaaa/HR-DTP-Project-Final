@@ -421,7 +421,7 @@
         @endphp
 
         @if($user->avatar)
-          <img id="avatar-preview" src="{{ URL::to('assets/images/user/'.$user->avatar) }}" alt="{{ $user->name }}">
+          <img id="avatar-preview" src="{{ asset('assets/images/user/'.$user->avatar) }}" alt="{{ $user->name }}">
         @else
           <div id="avatar-initials" class="profile-hero-initials">{{ $initials }}</div>
           <img id="avatar-preview" src="" alt="{{ $user->name }}" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">

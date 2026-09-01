@@ -11,11 +11,11 @@
     <meta content="Sinergi Hotel & Vila" name="author">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- app favicon -->
-    <link rel="shortcut icon" href="{{ URL::to('assets/images/favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
     <!-- layout config js -->
-    <script src="{{ URL::to('assets/js/layout.js') }}"></script>
+    <script src="{{ asset('assets/js/layout.js') }}"></script>
     <!-- sinergi hotel & vila css -->
-    <link rel="stylesheet" href="{{ URL::to('assets/css/starcode2.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/starcode2.css') }}">
     <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -607,7 +607,7 @@
             <!-- logo (horizontal only) -->
             <div class="items-center justify-center hidden px-5 text-center h-header group-data-[layout=horizontal]:md:flex group-data-[layout=horizontal]:ltr::pl-0 group-data-[layout=horizontal]:rtl:pr-0">
               <a href="{{ route('home') }}">
-                <img src="{{ URL::to('assets/images/logo-sinergi.png') }}" alt="" class="h-10 mx-auto">
+                <img src="{{ asset('assets/images/logo-sinergi.png') }}" alt="" class="h-10 mx-auto">
               </a>
             </div>
 
@@ -678,8 +678,8 @@
   <!-- end page wrapper -->
 
   <!-- scripts -->
-  <script src="{{ URL::to('assets/libs/lucide/umd/lucide.js') }}"></script>
-  <script src="{{ URL::to('assets/js/layout.js') }}"></script>
+  <script src="{{ asset('assets/libs/lucide/umd/lucide.js') }}"></script>
+  <script src="{{ asset('assets/js/layout.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <!-- mobile sidebar overlay -->

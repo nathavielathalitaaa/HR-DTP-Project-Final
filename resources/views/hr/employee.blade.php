@@ -142,7 +142,7 @@
 @endphp
 <div class="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white shadow-sm group-hover:scale-105 transition-transform" style="background-color: {{ $bgColor }}; color:#ffffff; font-weight:600; font-size:12px;">
     @if($hasAvatar)
-        <img src="{{ URL::to('assets/images/user/'.$employee->avatar) }}" class="w-full h-full object-cover">
+        <img src="{{ asset('assets/images/user/'.$employee->avatar) }}" class="w-full h-full object-cover">
     @else
         {{ $initials }}
     @endif
@@ -233,7 +233,7 @@
                     <div class="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
                         <div class="flex justify-center">
                             <div class="relative group">
-                                <img id="addPhotoPreview" src="{{ URL::to('assets/images/profile.png') }}" class="w-28 h-28 rounded-[32px] object-cover border-4 border-white shadow-xl">
+                                <img id="addPhotoPreview" src="{{ asset('assets/images/profile.png') }}" class="w-28 h-28 rounded-[32px] object-cover border-4 border-white shadow-xl">
                                 <label for="addPhoto" class="absolute -bottom-2 -right-2 w-10 h-10 bg-[#4F6560] rounded-2xl flex items-center justify-center cursor-pointer hover:bg-[#3d504c] transition-all shadow-lg">
                                     <i data-lucide="camera" class="w-5 h-5 text-white"></i>
                                 </label>
@@ -338,7 +338,7 @@
                     <div class="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
                         <div class="flex justify-center">
                             <div class="relative group">
-                                <img id="edit-photo-preview" src="{{ URL::to('assets/images/user.png') }}" class="w-28 h-28 rounded-[32px] object-cover border-4 border-white shadow-xl edit-user-profile-image">
+                                <img id="edit-photo-preview" src="{{ asset('assets/images/user.png') }}" class="w-28 h-28 rounded-[32px] object-cover border-4 border-white shadow-xl edit-user-profile-image">
                                 <label for="edit-profile-img-file-input" class="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-all shadow-lg">
                                     <i data-lucide="camera" class="w-5 h-5 text-white"></i>
                                 </label>

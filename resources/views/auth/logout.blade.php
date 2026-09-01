@@ -116,7 +116,7 @@
 
     <div class="logout-card">
         <div class="logo-box">
-            <img src="{{ URL::to('assets/images/logo-sinergi.png') }}" alt="Sinergi Hotel & Villa">
+            <img src="{{ asset('assets/images/logo-sinergi.png') }}" alt="Sinergi Hotel & Villa">
         </div>
 
         <div class="icon-circle">

@@ -22,7 +22,7 @@
                         <div class="bg-white/80 backdrop-blur rounded-3xl p-6 shadow-sm border border-white/40 text-center">
                             <p class="text-xs font-bold uppercase tracking-widest text-[#4F6560]/60 mb-4">Profile Photo</p>
                             <div class="relative inline-block">
-                                <img id="edit-photo-preview" src="{{ $user->avatar ? URL::to('assets/images/user/'.$user->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=E8F5EE&color=1A2B24&size=200' }}"
+                                <img id="edit-photo-preview" src="{{ $user->avatar ? asset('assets/images/user/'.$user->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=E8F5EE&color=1A2B24&size=200' }}"
                                      class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-white shadow-sm transition hover:scale-105 duration-300">
                                 <label for="photo-input" class="absolute bottom-0 right-0 w-10 h-10 bg-[#4F6560] rounded-full flex items-center justify-center cursor-pointer hover:bg-[#3d504c] shadow-lg border-2 border-white transition">
                                     <i data-lucide="camera" class="w-5 h-5 text-white"></i>
