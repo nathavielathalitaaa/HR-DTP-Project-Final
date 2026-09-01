@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 use App\Models\User;
 use App\Models\EmployeeProfile;
@@ -17,7 +18,7 @@ class ProductionSeeder extends Seeder
         $this->command->info('Starting production setup...');
 
         // ── STEP 1: Wipe all transactional & test data ───────────────
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        Schema::disableForeignKeyConstraints();
 
         $this->command->info('Clearing transactional data...');
         DB::table('document_approvals')->truncate();
@@ -34,7 +35,7 @@ class ProductionSeeder extends Seeder
         DB::table('employee_profiles')->truncate();
         DB::table('users')->truncate();
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        Schema::enableForeignKeyConstraints();
 
         // ── STEP 2: Ensure roles exist ────────────────────────────────
         $this->command->info('Setting up roles...');
@@ -45,21 +46,30 @@ class ProductionSeeder extends Seeder
 
         // ── STEP 3: Create the one admin HR account ───────────────────
         $this->command->info('Creating admin HR account...');
-        $admin = User::create([
-            'name'      => 'Admin HR',
-            'email'     => 'admin@sinergihotel.com',
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@sinergihotel.com'],
+            [
+                'name'      => 'Admin HR',
+                'password'  => bcrypt('Sinergi@2026'),
+                'user_id'   => 'SIN-0001',
+                'status'    => 'aktif',
+                'role_name' => 'hr',
+            ]
+        );
+        $admin->update([
             'password'  => bcrypt('Sinergi@2026'),
-            'user_id'   => 'SIN-0001',
             'status'    => 'aktif',
             'role_name' => 'hr',
         ]);
         $admin->assignRole('hr');
 
-        EmployeeProfile::create([
-            'user_id'           => $admin->id,
-            'jabatan'           => 'Human Resources',
-            'status_pernikahan' => 'belum_menikah',
-        ]);
+        EmployeeProfile::firstOrCreate(
+            ['user_id' => $admin->id],
+            [
+                'jabatan'           => 'Human Resources',
+                'status_pernikahan' => 'belum_menikah',
+            ]
+        );
 
         // ── STEP 4: Default surat types ───────────────────────────────
         $this->command->info('Setting up surat types...');

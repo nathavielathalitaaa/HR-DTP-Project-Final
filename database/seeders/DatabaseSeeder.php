@@ -14,9 +14,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // panggil seeder dasar
+        // panggil production seeder agar akun admin@sinergihotel.com selalu terbuat
         $this->call([
-            DataAwalSeeder::class,
+            ProductionSeeder::class,
         ]);
     }
 }
