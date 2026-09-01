@@ -399,7 +399,7 @@
 <div>
 
 <div class="mb-8">
-    <h1 class="text-3xl font-playfair font-bold text-[#1A2B24]">Welcome back, {{ auth()->user()->name }}</h1>
+    <h1 class="text-3xl font-playfair font-bold text-[#1A2B24]">Welcome back, {{ auth()->user()->name }} 👋</h1>
     <p class="text-[13px] font-light text-[#6B7280] mt-1">Here's what's happening in your HR dashboard today.</p>
 </div>
 
