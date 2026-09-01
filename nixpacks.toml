@@ -1,0 +1,6 @@
+[variables]
+NIXPACKS_PHP_EXTENSIONS = "ctype, curl, dom, fileinfo, filter, gd, hash, mbstring, openssl, pcre, pdo, pdo_mysql, session, tokenizer, xml, zip"
+RAILPACK_BUILD_APT_PACKAGES = "php-zip php-gd php-mysql php-xml php-mbstring php-curl"
+
+[phases.setup]
+nixPkgs = ["php82", "php82Extensions.gd", "php82Extensions.zip", "php82Extensions.pdo_mysql", "composer"]
