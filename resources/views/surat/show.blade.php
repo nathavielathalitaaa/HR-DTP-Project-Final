@@ -352,7 +352,8 @@
                 </div>
                 @else
                 @php
-                    $coverExists = \Illuminate\Support\Facades\Storage::disk('public')->exists($surat->cover_pdf_path);
+                    $coverDisk = \Illuminate\Support\Facades\Storage::disk(config('filesystems.default'));
+                    $coverExists = $coverDisk->exists($surat->cover_pdf_path) || file_exists(storage_path('app/public/' . $surat->cover_pdf_path));
                 @endphp
                 @if($coverExists)
                 <div style="margin-top:16px;padding-top:16px;border-top:1px solid #F0F4F2;">

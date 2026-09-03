@@ -86,19 +86,29 @@ class User extends Authenticatable
 
         $disk = Storage::disk(config('filesystems.default'));
 
-        if ($disk->exists($this->avatar)) {
-            return $disk->url($this->avatar);
-        }
+        $getUrl = function ($path) use ($disk) {
+            return $disk->providesTemporaryUrls()
+                ? $disk->temporaryUrl($path, now()->addMinutes(60))
+                : $disk->url($path);
+        };
 
-        if ($disk->exists('avatars/' . $this->avatar)) {
-            return $disk->url('avatars/' . $this->avatar);
+        try {
+            if ($disk->exists($this->avatar)) {
+                return $getUrl($this->avatar);
+            }
+
+            if ($disk->exists('avatars/' . $this->avatar)) {
+                return $getUrl('avatars/' . $this->avatar);
+            }
+        } catch (\Throwable $e) {
+            return $getUrl($this->avatar);
         }
 
         if (file_exists(public_path('assets/images/user/' . $this->avatar))) {
             return asset('assets/images/user/' . $this->avatar);
         }
 
-        return $disk->url($this->avatar);
+        return $getUrl($this->avatar);
     }
 }
 

@@ -74,8 +74,14 @@
 
             <div class="mb-4 text-center">
                 @if($settings['logo_path'])
+                    @php
+                        $logoDisk = \Illuminate\Support\Facades\Storage::disk(config('filesystems.default'));
+                        $logoUrl = $logoDisk->providesTemporaryUrls() 
+                            ? $logoDisk->temporaryUrl($settings['logo_path'], now()->addMinutes(60)) 
+                            : $logoDisk->url($settings['logo_path']);
+                    @endphp
                     <div class="mb-3 p-3 border border-dashed border-slate-300 rounded-lg bg-slate-50 flex items-center justify-center min-h-[120px]">
-                        <img src="{{ \Illuminate\Support\Facades\Storage::url($settings['logo_path']) }}" alt="Logo Dokumen" class="max-w-full max-h-[100px] object-contain">
+                        <img src="{{ $logoUrl }}" alt="Logo Dokumen" class="max-w-full max-h-[100px] object-contain">
                     </div>
                 @else
                     <div class="mb-3 p-3 border border-dashed border-slate-300 rounded-lg bg-slate-50 flex items-center justify-center min-h-[120px]">
