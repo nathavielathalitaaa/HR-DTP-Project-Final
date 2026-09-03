@@ -12,6 +12,7 @@ use App\Models\Absensi;
 use App\Models\ActivityLog;
 use App\Imports\KaryawanImport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -77,8 +78,7 @@ class HRController extends Controller
             $photo = null;
             
             if ($request->hasFile('profile_image')) {
-                $photo = $request->name . '_' . time() . '.' . $request->file('profile_image')->extension();
-                $request->file('profile_image')->move(public_path('assets/images/user'), $photo);
+                $photo = $request->file('profile_image')->store('avatars');
             }
 
             $register = new User();
@@ -171,14 +171,14 @@ class HRController extends Controller
             $user = User::findOrFail($request->id);
 
             if ($request->hasFile('photo')) {
-                $photo = $request->name . '-' . time() . '.' . $request->photo->extension();
-                $request->photo->move(public_path('assets/images/user'), $photo);
-
-                if (!empty($user->avatar) && file_exists(public_path('assets/images/user/' . $user->avatar))) {
-                    unlink(public_path('assets/images/user/' . $user->avatar));
+                if (!empty($user->avatar) && $user->avatar !== 'profile.png') {
+                    Storage::disk(config('filesystems.default'))->delete($user->avatar);
+                    if (file_exists(public_path('assets/images/user/' . $user->avatar))) {
+                        @unlink(public_path('assets/images/user/' . $user->avatar));
+                    }
                 }
 
-                $user->avatar = $photo;
+                $user->avatar = $request->file('photo')->store('avatars');
             }
 
             $user->name         = $request->name;
@@ -264,8 +264,11 @@ class HRController extends Controller
             $deleteRecord = User::findOrFail($request->id_delete);
             $deleteRecord->delete();
             
-            if (!empty($request->del_photo) && file_exists(public_path('assets/images/user/' . $request->del_photo))) {
-                unlink(public_path('assets/images/user/' . $request->del_photo));
+            if (!empty($request->del_photo)) {
+                Storage::disk(config('filesystems.default'))->delete($request->del_photo);
+                if (file_exists(public_path('assets/images/user/' . $request->del_photo))) {
+                    @unlink(public_path('assets/images/user/' . $request->del_photo));
+                }
             }
 
             ActivityLog::log('delete_employee', null, "Menghapus karyawan: {$deleteRecord->name} ({$deleteRecord->user_id})");

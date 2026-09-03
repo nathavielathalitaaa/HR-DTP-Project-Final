@@ -65,24 +65,21 @@ class AccountController extends Controller // class controller utk fitur manajem
 
         $user = Auth::user();
         
-        // if ini proses upload klo file beneran ada: generate nama unik, simpan ke folder, hapus foto lama klo ada, update db
+        // if ini proses upload klo file beneran ada: generate nama unik, simpan ke default storage, hapus foto lama klo ada, update db
         if ($request->hasFile('photo')) {
-            $image = $request->file('photo');
-            $filename = time() . '.' . $image->getClientOriginalExtension();
-            
-            // simpan ke public itulah
-            $image->move(public_path('assets/images/user'), $filename);
-            
-            // hapus foto lama jika ada
-            if ($user->avatar && file_exists(public_path('assets/images/user/' . $user->avatar))) {
-                @unlink(public_path('assets/images/user/' . $user->avatar));
+            if ($user->avatar && $user->avatar !== 'profile.png') {
+                Storage::disk(config('filesystems.default'))->delete($user->avatar);
+                if (file_exists(public_path('assets/images/user/' . $user->avatar))) {
+                    @unlink(public_path('assets/images/user/' . $user->avatar));
+                }
             }
             
-            $user->update(['avatar' => $filename]);
+            $path = $request->file('photo')->store('avatars');
+            $user->update(['avatar' => $path]);
             
             return response()->json([
                 'success' => true,
-                'url' => asset('assets/images/user/' . $filename)
+                'url' => $user->avatar_url
             ]);
         }
         
@@ -94,8 +91,11 @@ class AccountController extends Controller // class controller utk fitur manajem
     {
         $user = Auth::user();
 
-        if ($user->avatar && file_exists(public_path('assets/images/user/' . $user->avatar))) {
-            @unlink(public_path('assets/images/user/' . $user->avatar));
+        if ($user->avatar) {
+            Storage::disk(config('filesystems.default'))->delete($user->avatar);
+            if (file_exists(public_path('assets/images/user/' . $user->avatar))) {
+                @unlink(public_path('assets/images/user/' . $user->avatar));
+            }
         }
 
         $user->update(['avatar' => null]);
@@ -120,26 +120,19 @@ class AccountController extends Controller // class controller utk fitur manajem
         $user = Auth::user();
         $profile = $user->profile()->firstOrCreate(['user_id' => $user->id]);
 
-        // ensure directory exists
-        Storage::makeDirectory('private/ttd');
-
-        // always save as png
-        $filename = 'ttd/' . $user->id . '.png';
-
-        // if ini hapus file ttd lama klo udah ada, biar gk numpuk di storage
         if ($profile->ttd_path) {
+            Storage::disk(config('filesystems.default'))->delete($profile->ttd_path);
             Storage::disk('local')->delete('private/' . $profile->ttd_path);
         }
 
-        // store new ttd file
-        Storage::disk('local')->putFileAs('private', $request->file('ttd'), $filename);
-        $profile->update(['ttd_path' => $filename]);
+        $path = $request->file('ttd')->storeAs('ttd', $user->id . '.png');
+        $profile->update(['ttd_path' => $path]);
 
         flash()->success('Tanda tangan berhasil diunggah');
         return redirect()->route('profile.show');
     }
 
-    // fungsi ini handle upload digital signature ke public storage, bs buat hr update signature karyawan lain
+    // fungsi ini handle upload digital signature ke default storage, bs buat hr update signature karyawan lain
     public function uploadSignature(Request $request, $id = null)
     {
         $id = $id ?? Auth::id();
@@ -162,25 +155,24 @@ class AccountController extends Controller // class controller utk fitur manajem
 
         $profile = $user->profile()->firstOrCreate(['user_id' => $user->id]);
 
-        // if ini proses upload: hapus signature lama klo ada, simpen yg baru ke folder 'private/signatures' di local disk
+        // if ini proses upload: hapus signature lama klo ada, simpen yg baru ke folder 'signatures' di default disk
         if ($request->hasFile('signature')) {
             // delete old signature if exists
             if ($profile->signature_path) {
+                Storage::disk(config('filesystems.default'))->delete($profile->signature_path);
                 Storage::disk('local')->delete('private/' . $profile->signature_path);
             }
 
-            // save new signature to private storage
-            $filename = 'signatures/' . $user->id . '_' . time() . '.' . $request->file('signature')->getClientOriginalExtension();
-            Storage::disk('local')->putFileAs('private', $request->file('signature'), $filename);
-            
-            $profile->update(['signature_path' => $filename]);
+            // save new signature to default storage
+            $path = $request->file('signature')->store('signatures');
+            $profile->update(['signature_path' => $path]);
         }
 
         flash()->success('Tanda tangan digital berhasil disimpan');
         return redirect()->back();
     }
 
-    // fungsi ini hapus digital signature user dari public storage, cuma bs dilakukan oleh user sendiri atau hr
+    // fungsi ini hapus digital signature user dari default storage, cuma bs dilakukan oleh user sendiri atau hr
     public function deleteSignature($id = null)
     {
         $id = $id ?? Auth::id();
@@ -195,6 +187,7 @@ class AccountController extends Controller // class controller utk fitur manajem
 
         // if ini cek klo profile & signature_path ada, baru hapus file dr storage & update db jadi null
         if ($profile && $profile->signature_path) {
+            Storage::disk(config('filesystems.default'))->delete($profile->signature_path);
             Storage::disk('local')->delete('private/' . $profile->signature_path);
             $profile->update(['signature_path' => null]);
             flash()->success('Tanda tangan digital berhasil dihapus');
@@ -247,32 +240,32 @@ class AccountController extends Controller // class controller utk fitur manajem
 
         if (!$profile) abort(404);
 
-        $path = null;
-        if ($profile->signature_path) {
-            $path = storage_path('app/public/' . $profile->signature_path);
-            if (!file_exists($path)) {
-                $path = storage_path('app/private/' . $profile->signature_path);
+        $disk = Storage::disk(config('filesystems.default'));
+        $targetPath = $profile->signature_path ?? $profile->ttd_path;
+
+        if ($targetPath) {
+            if ($disk->exists($targetPath)) {
+                return $disk->response($targetPath);
+            }
+            if ($disk->exists('private/' . $targetPath)) {
+                return $disk->response('private/' . $targetPath);
+            }
+
+            $localPossiblePaths = [
+                storage_path('app/public/' . $targetPath),
+                storage_path('app/private/' . $targetPath),
+                storage_path('app/private/private/' . $targetPath),
+                storage_path('app/' . $targetPath),
+            ];
+            foreach ($localPossiblePaths as $p) {
+                if (file_exists($p)) {
+                    $mime = str_ends_with($p, '.png') ? 'image/png' : 'image/jpeg';
+                    return response()->file($p, ['Content-Type' => $mime]);
+                }
             }
         }
 
-        if (!$path || !file_exists($path)) {
-            if ($profile->ttd_path) {
-                $path = storage_path('app/private/' . $profile->ttd_path);
-                if (!file_exists($path)) {
-                    $path = storage_path('app/private/private/' . $profile->ttd_path);
-                }
-                if (!file_exists($path)) {
-                    $path = storage_path('app/public/' . $profile->ttd_path);
-                }
-            }
-        }
-
-        if (!$path || !file_exists($path)) {
-            abort(404, 'Signature file not found');
-        }
-
-        $mime = str_ends_with($path, '.png') ? 'image/png' : 'image/jpeg';
-        return response()->file($path, ['Content-Type' => $mime]);
+        abort(404, 'Signature file not found');
     }
 
     // fungsi ini update email user, wajib verifikasi password dulu buat keamanan
@@ -360,18 +353,15 @@ class AccountController extends Controller // class controller utk fitur manajem
 
         $user    = Auth::user();
         $profile = $user->profile()->firstOrCreate(['user_id' => $user->id]);
-        $ext      = 'png';
-        $filename = $user->id . '.' . $ext;
+        $filename = $user->id . '.png';
 
-        Storage::makeDirectory('private/ttd');
-
-        // if ini hapus ttd lama klo ada sebelum simpan yg baru
         if ($profile->ttd_path) {
-            Storage::delete('private/' . $profile->ttd_path);
+            Storage::disk(config('filesystems.default'))->delete($profile->ttd_path);
+            Storage::disk('local')->delete('private/' . $profile->ttd_path);
         }
 
-        $request->file('ttd')->storeAs('private/ttd', $filename);
-        $profile->update(['ttd_path' => 'ttd/' . $filename]);
+        $path = $request->file('ttd')->storeAs('ttd', $filename);
+        $profile->update(['ttd_path' => $path]);
 
         flash()->success('Tanda tangan berhasil disimpan. Sekarang buat PIN Anda.');
         return redirect()->route('onboarding');

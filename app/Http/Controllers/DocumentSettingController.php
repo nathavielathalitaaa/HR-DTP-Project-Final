@@ -51,9 +51,9 @@ class DocumentSettingController extends Controller
             'logo' => 'required|image|mimes:png,jpg,jpeg|max:2048',
         ]);
 
-        // proses upload klo file beneran ada: simpan ke folder 'document-logos' di public disk, update path di database, tampilin pesan sukses
+        // proses upload klo file beneran ada: simpan ke folder 'document-logos' di default disk (s3/local), update path di database, tampilin pesan sukses
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('document-logos', 'public');
+            $path = $request->file('logo')->store('document-logos');
             DocumentSetting::set('logo_path', $path);
             flash()->success('Logo dokumen berhasil diunggah.');
         }

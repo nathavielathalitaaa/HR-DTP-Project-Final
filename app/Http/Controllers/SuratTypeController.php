@@ -160,14 +160,14 @@ class SuratTypeController extends Controller
                 $surat->approvals()->delete();
                 
                 // delete files from storage if they exist
-                if ($surat->file_pdf) {
-                    \Illuminate\Support\Facades\Storage::disk('public')->delete($surat->file_pdf);
-                }
-                if ($surat->cover_pdf_path) {
-                    \Illuminate\Support\Facades\Storage::disk('public')->delete($surat->cover_pdf_path);
-                }
-                if ($surat->final_pdf_path) {
-                    \Illuminate\Support\Facades\Storage::disk('public')->delete($surat->final_pdf_path);
+                $filesToDelete = [$surat->file_pdf, $surat->cover_pdf_path, $surat->final_pdf_path];
+                foreach ($filesToDelete as $file) {
+                    if ($file) {
+                        \Illuminate\Support\Facades\Storage::disk(config('filesystems.default'))->delete($file);
+                        if (file_exists(storage_path('app/public/' . $file))) {
+                            @unlink(storage_path('app/public/' . $file));
+                        }
+                    }
                 }
                 
                 $surat->delete();

@@ -15,6 +15,7 @@ use App\Models\EmployeeProfile;
 use App\Http\Requests\Surat\StoreSuratRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class SuratController extends Controller
 {
@@ -98,7 +99,7 @@ class SuratController extends Controller
         $fileName = null;
         
         if ($request->hasFile('file_pdf')) {
-            $fileName = $request->file('file_pdf')->store('surat', 'public');
+            $fileName = $request->file('file_pdf')->store('surat');
         }
 
         // ── Penyimpanan Data ────────────────────────────────────────────
@@ -195,11 +196,14 @@ class SuratController extends Controller
 
         // ── Penggantian File PDF ────────────────────────────────────────
         if ($request->hasFile('file_pdf')) {
-            if ($surat->file_pdf && file_exists(storage_path('app/public/' . $surat->file_pdf))) {
-                unlink(storage_path('app/public/' . $surat->file_pdf));
+            if ($surat->file_pdf) {
+                Storage::disk(config('filesystems.default'))->delete($surat->file_pdf);
+                if (file_exists(storage_path('app/public/' . $surat->file_pdf))) {
+                    @unlink(storage_path('app/public/' . $surat->file_pdf));
+                }
             }
             
-            $surat->update(['file_pdf' => $request->file('file_pdf')->store('surat', 'public')]);
+            $surat->update(['file_pdf' => $request->file('file_pdf')->store('surat')]);
         }
 
         // ── Reset Status & Approval ─────────────────────────────────────
@@ -405,13 +409,6 @@ class SuratController extends Controller
             return redirect()->route('surat.show', $surat->id);
         }
 
-        $filePath = storage_path('app/public/' . $relativePath);
-
-        if (!file_exists($filePath)) {
-            flash()->error('File PDF tidak ditemukan di server.');
-            return redirect()->route('surat.show', $surat->id);
-        }
-
         // ── Formatting Nama File ────────────────────────────────────────
         $baseName = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $surat->nomor_surat);
         
@@ -426,7 +423,19 @@ class SuratController extends Controller
 
         $filename = $baseName . $suffix . '.pdf';
 
-        return response()->download($filePath, $filename);
+        $disk = Storage::disk(config('filesystems.default'));
+        if ($disk->exists($relativePath)) {
+            return $disk->download($relativePath, $filename);
+        }
+
+        $filePath = storage_path('app/public/' . $relativePath);
+
+        if (file_exists($filePath)) {
+            return response()->download($filePath, $filename);
+        }
+
+        flash()->error('File PDF tidak ditemukan di server.');
+        return redirect()->route('surat.show', $surat->id);
     }
 
 
@@ -456,8 +465,11 @@ class SuratController extends Controller
         ];
 
         foreach ($filesToDelete as $file) {
-            if ($file && file_exists(storage_path('app/public/' . $file))) {
-                unlink(storage_path('app/public/' . $file));
+            if ($file) {
+                Storage::disk(config('filesystems.default'))->delete($file);
+                if (file_exists(storage_path('app/public/' . $file))) {
+                    @unlink(storage_path('app/public/' . $file));
+                }
             }
         }
 

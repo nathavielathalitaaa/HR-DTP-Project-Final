@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -70,6 +71,34 @@ class User extends Authenticatable
     public function hasJabatan(string $jabatan): bool
     {
         return $this->profile?->jabatan === $jabatan;
+    }
+
+    // ── helper: URL avatar (S3 / Storage / local fallback)
+    public function getAvatarUrlAttribute(): string
+    {
+        if (!$this->avatar) {
+            return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=E8F5EE&color=1A2B24&size=200';
+        }
+
+        if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+            return $this->avatar;
+        }
+
+        $disk = Storage::disk(config('filesystems.default'));
+
+        if ($disk->exists($this->avatar)) {
+            return $disk->url($this->avatar);
+        }
+
+        if ($disk->exists('avatars/' . $this->avatar)) {
+            return $disk->url('avatars/' . $this->avatar);
+        }
+
+        if (file_exists(public_path('assets/images/user/' . $this->avatar))) {
+            return asset('assets/images/user/' . $this->avatar);
+        }
+
+        return $disk->url($this->avatar);
     }
 }
 

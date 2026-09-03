@@ -39,9 +39,19 @@ class PdfStampService
         }
 
         // ── Load PDF Original ───────────────────────────────────────────
-        $originalPdfPath = storage_path('app/public/' . $surat->file_pdf);
+        $disk = Storage::disk(config('filesystems.default'));
+        $tempOriginal = null;
+
+        if ($surat->file_pdf && $disk->exists($surat->file_pdf)) {
+            $tempOriginal = tempnam(sys_get_temp_dir(), 'pdf_orig_');
+            file_put_contents($tempOriginal, $disk->get($surat->file_pdf));
+            $originalPdfPath = $tempOriginal;
+        } else {
+            $originalPdfPath = storage_path('app/public/' . $surat->file_pdf);
+        }
         
         if (!file_exists($originalPdfPath)) {
+            if ($tempOriginal) @unlink($tempOriginal);
             \Log::error('Stamp failed: Original PDF not found', ['path' => $originalPdfPath]);
             throw new \Exception("Original PDF file not found at " . $originalPdfPath);
         }
@@ -51,6 +61,7 @@ class PdfStampService
         try {
             $pageCount = $pdf->setSourceFile($originalPdfPath);
         } catch (\Exception $e) {
+            if ($tempOriginal) @unlink($tempOriginal);
             \Log::warning('FPDI cannot read PDF, falling back to append mode. ' . $e->getMessage());
             return $this->appendSignatures($surat);
         }
@@ -114,18 +125,19 @@ class PdfStampService
 
             // ── Simpan PDF Final ────────────────────────────────────────────
             $finalFilename = $surat->id . '_final_' . time() . '.pdf';
-            $finalDir = storage_path('app/public/final-pdf');
-            
-            if (!is_dir($finalDir)) {
-                mkdir($finalDir, 0755, true);
-            }
-            
-            $finalPath = $finalDir . '/' . $finalFilename;
+            $tempFinalPath = tempnam(sys_get_temp_dir(), 'pdf_final_');
 
-            $pdf->Output('F', $finalPath);
+            $pdf->Output('F', $tempFinalPath);
 
-            return 'final-pdf/' . $finalFilename;
+            $finalRelPath = 'final-pdf/' . $finalFilename;
+            $disk->put($finalRelPath, file_get_contents($tempFinalPath));
+
+            @unlink($tempFinalPath);
+            if ($tempOriginal) @unlink($tempOriginal);
+
+            return $finalRelPath;
         } catch (\Exception $e) {
+            if ($tempOriginal) @unlink($tempOriginal);
             \Log::error('FPDI Error during stamp: ' . $e->getMessage());
             throw $e;
         }
@@ -210,13 +222,7 @@ class PdfStampService
         $pdf->Cell(0, 10, 'Dokumen ini adalah lampiran lembar pengesahan digital.', 0, 0, 'C');
 
         $finalFilename = $surat->id . '_pengesahan_' . time() . '.pdf';
-        $finalDir = storage_path('app/public/final-pdf');
-        
-        if (!is_dir($finalDir)) {
-            mkdir($finalDir, 0755, true);
-        }
-        
-        $finalPath = $finalDir . '/' . $finalFilename;
+        $tempFinalPath = tempnam(sys_get_temp_dir(), 'pdf_pengesahan_');
 
         // ── Stamp watermark footer di lembar pengesahan ──────────
         $pdf->SetFont('Helvetica', 'I', 7);
@@ -228,9 +234,15 @@ class PdfStampService
         $pdf->SetXY($pageWidth - $textWidth - 10, $pageHeight - 8);
         $pdf->Cell($textWidth, 4, $text, 0, 0, 'R');
 
-        $pdf->Output('F', $finalPath);
+        $pdf->Output('F', $tempFinalPath);
 
-        return 'final-pdf/' . $finalFilename;
+        $disk = Storage::disk(config('filesystems.default'));
+        $finalRelPath = 'final-pdf/' . $finalFilename;
+        $disk->put($finalRelPath, file_get_contents($tempFinalPath));
+
+        @unlink($tempFinalPath);
+
+        return $finalRelPath;
     }
 
 
@@ -256,6 +268,22 @@ class PdfStampService
 
         if (!$signature) {
             return null;
+        }
+
+        $disk = Storage::disk(config('filesystems.default'));
+
+        if ($disk->exists($signature)) {
+            $ext = pathinfo($signature, PATHINFO_EXTENSION);
+            $tempSig = tempnam(sys_get_temp_dir(), 'sig_') . ($ext ? '.' . $ext : '.png');
+            file_put_contents($tempSig, $disk->get($signature));
+            return $tempSig;
+        }
+
+        if ($disk->exists('private/' . $signature)) {
+            $ext = pathinfo($signature, PATHINFO_EXTENSION);
+            $tempSig = tempnam(sys_get_temp_dir(), 'sig_') . ($ext ? '.' . $ext : '.png');
+            file_put_contents($tempSig, $disk->get('private/' . $signature));
+            return $tempSig;
         }
 
         $possiblePaths = [

@@ -154,33 +154,54 @@ class SystemMonitorController extends Controller
             $filesAdded = 0;
             $filesToDelete = []; // Kumpulkan file yang akan dihapus SETELAH zip ditutup
             $suratsToUpdate = []; // Kumpulkan surat yang perlu diupdate di DB
-            
+            $tempFiles = [];
+            $disk = Storage::disk(config('filesystems.default'));
+
+            $addFileToZip = function($relPath, $zipEntryName) use ($disk, $zip, &$tempFiles) {
+                if ($disk->exists($relPath)) {
+                    $tempFile = tempnam(sys_get_temp_dir(), 'zip_');
+                    file_put_contents($tempFile, $disk->get($relPath));
+                    $zip->addFile($tempFile, $zipEntryName);
+                    $tempFiles[] = $tempFile;
+                    return true;
+                }
+                $localPath = storage_path('app/public/' . $relPath);
+                if (file_exists($localPath)) {
+                    $zip->addFile($localPath, $zipEntryName);
+                    return true;
+                }
+                return false;
+            };
+
             foreach ($surats as $surat) {
                 $baseName = 'Surat_' . str_replace('/', '_', $surat->nomor_surat ?? $surat->id);
                 $updateFields = [];
                 
                 // Cek dan tambahkan original file
-                if ($surat->file_pdf && $surat->file_pdf !== 'ARCHIVED' && Storage::disk('public')->exists($surat->file_pdf)) {
-                    $zip->addFile(Storage::disk('public')->path($surat->file_pdf), $baseName . '_Original.pdf');
-                    $filesToDelete[] = $surat->file_pdf;
-                    $updateFields['file_pdf'] = 'ARCHIVED';
-                    $filesAdded++;
+                if ($surat->file_pdf && $surat->file_pdf !== 'ARCHIVED') {
+                    if ($addFileToZip($surat->file_pdf, $baseName . '_Original.pdf')) {
+                        $filesToDelete[] = $surat->file_pdf;
+                        $updateFields['file_pdf'] = 'ARCHIVED';
+                        $filesAdded++;
+                    }
                 }
 
                 // Cek dan tambahkan cover file
-                if ($surat->cover_pdf_path && $surat->cover_pdf_path !== 'ARCHIVED' && Storage::disk('public')->exists($surat->cover_pdf_path)) {
-                    $zip->addFile(Storage::disk('public')->path($surat->cover_pdf_path), $baseName . '_Cover.pdf');
-                    $filesToDelete[] = $surat->cover_pdf_path;
-                    $updateFields['cover_pdf_path'] = 'ARCHIVED';
-                    $filesAdded++;
+                if ($surat->cover_pdf_path && $surat->cover_pdf_path !== 'ARCHIVED') {
+                    if ($addFileToZip($surat->cover_pdf_path, $baseName . '_Cover.pdf')) {
+                        $filesToDelete[] = $surat->cover_pdf_path;
+                        $updateFields['cover_pdf_path'] = 'ARCHIVED';
+                        $filesAdded++;
+                    }
                 }
 
                 // Cek dan tambahkan final file
-                if ($surat->final_pdf_path && $surat->final_pdf_path !== 'ARCHIVED' && Storage::disk('public')->exists($surat->final_pdf_path)) {
-                    $zip->addFile(Storage::disk('public')->path($surat->final_pdf_path), $baseName . '_Final.pdf');
-                    $filesToDelete[] = $surat->final_pdf_path;
-                    $updateFields['final_pdf_path'] = 'ARCHIVED';
-                    $filesAdded++;
+                if ($surat->final_pdf_path && $surat->final_pdf_path !== 'ARCHIVED') {
+                    if ($addFileToZip($surat->final_pdf_path, $baseName . '_Final.pdf')) {
+                        $filesToDelete[] = $surat->final_pdf_path;
+                        $updateFields['final_pdf_path'] = 'ARCHIVED';
+                        $filesAdded++;
+                    }
                 }
                 
                 if (!empty($updateFields)) {
@@ -193,9 +214,17 @@ class SystemMonitorController extends Controller
                 // ZipArchive baru membaca file saat close() dipanggil
                 $zip->close();
 
+                // Hapus temp files
+                foreach ($tempFiles as $tf) {
+                    @unlink($tf);
+                }
+
                 // Setelah zip berhasil ditutup, baru hapus file asli dan update DB
                 foreach ($filesToDelete as $fileToDelete) {
-                    Storage::disk('public')->delete($fileToDelete);
+                    $disk->delete($fileToDelete);
+                    if (file_exists(storage_path('app/public/' . $fileToDelete))) {
+                        @unlink(storage_path('app/public/' . $fileToDelete));
+                    }
                 }
 
                 foreach ($suratsToUpdate as $item) {
