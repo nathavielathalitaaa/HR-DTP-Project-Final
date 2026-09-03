@@ -114,6 +114,7 @@
                     <tr class="emp-data-row hidden"
                         data-id="{{ $employee->id }}"
                         data-photo="{{ $employee->avatar }}"
+                        data-photo-url="{{ $employee->avatar_url }}"
                         data-location="{{ $employee->location }}"
                         data-join-date="{{ $employee->join_date }}"
                         data-status="{{ $employee->status }}"
@@ -136,13 +137,9 @@
                         <td class="px-6 py-4 font-medium text-gray-400">{{ ++$key }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-4">
-@php
-  $avatarPath = $employee->avatar ? public_path('assets/images/user/' . $employee->avatar) : null;
-  $hasAvatar = $avatarPath && file_exists($avatarPath);
-@endphp
 <div class="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white shadow-sm group-hover:scale-105 transition-transform" style="background-color: {{ $bgColor }}; color:#ffffff; font-weight:600; font-size:12px;">
-    @if($hasAvatar)
-        <img src="{{ asset('assets/images/user/'.$employee->avatar) }}" class="w-full h-full object-cover">
+    @if($employee->avatar)
+        <img src="{{ $employee->avatar_url }}" class="w-full h-full object-cover">
     @else
         {{ $initials }}
     @endif
@@ -523,8 +520,9 @@
         if (!row) return;
         var data = row.dataset;
         var photo = data.photo || '';
-        if (photo && photo !== 'profile.png') {
-            $('#edit-photo-preview').attr('src', '/assets/images/user/' + photo);
+        var photoUrl = data.photoUrl || '';
+        if (photoUrl && photo !== 'profile.png') {
+            $('#edit-photo-preview').attr('src', photoUrl);
         } else {
             $('#edit-photo-preview').attr('src', '/assets/images/profile.png');
         }
@@ -566,8 +564,9 @@
             
             // Handle photo
             var photo = data.photo || '';
-            if (photo && photo !== 'profile.png') {
-                $('#edit-photo-preview').attr('src', '/assets/images/user/' + photo);
+            var photoUrl = data.photoUrl || '';
+            if (photoUrl && photo !== 'profile.png') {
+                $('#edit-photo-preview').attr('src', photoUrl);
             } else {
                 $('#edit-photo-preview').attr('src', '/assets/images/profile.png');
             }

@@ -339,7 +339,7 @@
                     <div class="al-user-cell">
                         <div class="al-ava">
                             @if($log->user?->avatar)
-                                <img src="{{ asset('assets/images/user/'.$log->user->avatar) }}" alt="">
+                                <img src="{{ $log->user->avatar_url }}" alt="">
                             @else
                                 {{ strtoupper(substr($log->user?->name ?? 'S', 0, 1)) }}
                             @endif
